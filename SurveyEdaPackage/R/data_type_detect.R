@@ -8,7 +8,8 @@ data_type_detect <- function(dataset,
                              date_force = c(),
                              alternate_nas = list(), #list(c(0, “colname1”),c(“hold”, “colname2”))
                              replace_nas = F){
-  if(typeof(dataset) != "list"){stop('Please pass a dataframe type structure to the function')}
+  if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
 }
 
 data_type_detect(data = trial_dataframe)
+?is.data.frame()
