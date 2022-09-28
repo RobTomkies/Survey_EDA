@@ -30,7 +30,7 @@ test_that("data type forcing error, integer index checks", {
   expect_silent(column_recog_vector('integer', c(1, 2, 3, 4),  trial_dataframe))
   expect_identical(column_recog_vector('integer', c(1, 2, 3, 4),  trial_dataframe), as.integer(c(1,2,3,4)))
   w <- capture_warnings(column_recog_vector('integer', c('x',1),  trial_dataframe))
-  expect_identical(w[3], "type 2: duplicate columns for forcing found - simplified to only one")
+  expect_identical(w[3], "type 2: duplicate columns for forcing found - simplified to only one\n")
 })
 
 test_that("data type forcing error, float index checks",{
@@ -44,6 +44,12 @@ test_that("data type forcing error, logical index checks",{
   expect_error(column_recog_vector('integer', c(T, T, F, F),  trial_dataframe), 'logical forcing vector for  integer  does not match the length of dataset columns please reconsider')
 })
 
+
+#column_recog_vector('integer', c('1.2', '2', '3','4.4', 'words'),  trial_dataframe)
 test_that("data type forcing error, string index checks",{
-  #needs to be completed
+  expect_silent(column_recog_vector('integer', c('x', 'y', 'doubls'),  trial_dataframe))
+  expect_identical(column_recog_vector('integer', c('x', 'y', 'doubls'),  trial_dataframe), as.integer(c(1,2,3)))
+  w <- capture_warnings(column_recog_vector('integer', c('1.2', '2', '3','4.4', 'words'),  trial_dataframe))
+  expect_identical(w[2],  "Integer names  2, 3  not found for  integer  forcing but successfully coerced to integer index\n")
+  expect_identical(w[3],  "Numeric names  1.2, 4.4  not found for  integer  forcing but successfully coerced to integer index\n")
 })

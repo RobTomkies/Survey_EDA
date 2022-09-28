@@ -37,16 +37,18 @@ column_recog_vector <- function(force_type, input_vector, dataset){
     else{
       warning(paste('Not all names provided in ',force_type, ' forcing found in dataset, attempting to coerce\n' ))
     }
+    ints_as_strings <- rep(NA,length(input_vector))
+    numeric_as_strings <- rep(NA,length(input_vector))
     for(i in 1:length(input_vector)){
       #integer as string and not in names
-      if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.integer(input_vector[i]))))){
-        warning(paste('Name \"',input_vector[i],'\" not found for', force_type,' forcing so coerced to integer\n'))
+      if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.integer(input_vector[i])))) & (suppressWarnings(as.integer(input_vector[i])) == suppressWarnings(as.numeric(input_vector[i])))){
+        ints_as_strings[i] <- input_vector[i]
         output_vector[i] <- as.integer(input_vector[i])
       }
       #numeric but not integer and string
-      else if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.numeric(input_vector[i]))))){
-        warning(paste('Name \"',input_vector[i],'\" not found for', force_type,' forcing so coerced to integer\n'))
+      else if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.numeric(input_vector[i])))) & (suppressWarnings(as.integer(input_vector[i])) != suppressWarnings(as.numeric(input_vector[i])))){
         output_vector[i] <- as.integer(input_vector[i])
+        numeric_as_strings[i] <- input_vector[i]
       }
       #name of column used
       else if(input_vector[i] %in% names(dataset)){
@@ -54,15 +56,31 @@ column_recog_vector <- function(force_type, input_vector, dataset){
       }
       else(stop(paste('could not find column name ', input_vector[i], ' from ', force_type, ' forcing. Please reconsider\n')))
     }
+    ints_as_strings <- ints_as_strings[!is.na(ints_as_strings)]
+    numeric_as_strings <- numeric_as_strings[!is.na(numeric_as_strings)]
+    if(any(!is.na(ints_as_strings))){
+      warning(paste('Integer names ',paste(ints_as_strings, collapse = ', '),' not found for ', force_type,' forcing but successfully coerced to integer index\n', collapse = ""))
+    }
+    if(any(!is.na(numeric_as_strings))){
+      warning(paste('Numeric names ',paste(numeric_as_strings, collapse = ', '),' not found for ', force_type,' forcing but successfully coerced to integer index\n',collapse = ""))
+    }
   }
   if(any(duplicated(output_vector))){
-    warning('type 2: duplicate columns for forcing found - simplified to only one')
+    warning('type 2: duplicate columns for forcing found - simplified to only one\n')
     output_vector <- output_vector[!duplicated(output_vector)]
   }
   return(as.integer(output_vector))
 }
 
-
+#this bit needs working on next
+column_recog_list <- function(force_type, input_list, dataset){
+  if(is.vector(input_list) & is.list(input_list))
+  if(force_type == 'nominal'){
+    for(i in 1:length(input_list)){
+      if(input_list[i])
+    }
+  }
+}
 
 data_type_detect <- function(dataset,
                              NLP_force = c(),
