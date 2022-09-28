@@ -1,4 +1,4 @@
-# trial_dataframe <- data.frame(x = c(1,2,3,4,5,6,7,8), y = c(2,3,4,6,7,8,9,5), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7),actual_int = c('1','2','3','4','5','6','7','8'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est'))
+ trial_dataframe <- data.frame(x = c(1,2,3,4,5,6,7,8), y = c(2,3,4,6,7,8,9,5), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7),actual_int = c('1','2','3','4','5','6','7','8'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est'))
 #
 # z <- c('x', 'y', 'doubls')
 # column_recog_vector('integer', z,  trial_dataframe)
@@ -37,8 +37,10 @@ column_recog_vector <- function(force_type, input_vector, dataset){
     else{
       warning(paste('Not all names provided in ',force_type, ' forcing found in dataset, attempting to coerce\n' ))
     }
+    #max length vector could be
     ints_as_strings <- rep(NA,length(input_vector))
     numeric_as_strings <- rep(NA,length(input_vector))
+#todo! shift to rcpp
     for(i in 1:length(input_vector)){
       #integer as string and not in names
       if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.integer(input_vector[i])))) & (suppressWarnings(as.integer(input_vector[i])) == suppressWarnings(as.numeric(input_vector[i])))){
@@ -56,6 +58,7 @@ column_recog_vector <- function(force_type, input_vector, dataset){
       }
       else(stop(paste('could not find column name ', input_vector[i], ' from ', force_type, ' forcing. Please reconsider\n')))
     }
+    #remove NA values
     ints_as_strings <- ints_as_strings[!is.na(ints_as_strings)]
     numeric_as_strings <- numeric_as_strings[!is.na(numeric_as_strings)]
     if(any(!is.na(ints_as_strings))){
@@ -72,26 +75,101 @@ column_recog_vector <- function(force_type, input_vector, dataset){
   return(as.integer(output_vector))
 }
 
-#this bit needs working on next
+# x <- list(c('x', 1,2,3), c('doubls', 4,5,6))
+# z <- column_recog_list('nominal', x, trial_dataframe)
+# z[[2]][[2]]
+
 column_recog_list <- function(force_type, input_list, dataset){
-  if(is.vector(input_list) & is.list(input_list))
-  if(force_type == 'nominal'){
-    for(i in 1:length(input_list)){
-      if(input_list[i])
+  if(!(force_type %in% c('ordinal', 'alternate_NA'))){stop('invalid force type in column_recog_list')}
+  #check list has been supplied
+  if(!is.list(input_list)){
+    stop(paste('Input for', force_type, 'is not of format list, please see documentation for details of correct input'))
+  }
+  #check all elements are vectors
+  if(!all(sapply(input_list, function(y) is.vector(y) & !is.list(y)))){
+    stop(paste('Input components of list for', force_type, 'is not of format vector, please see documentation for details of correct input'))
+  }
+  #return first element in each vector
+  action_cols <- sapply(input_list, function(y){return(y[1])})
+  action_levels <- sapply(input_list, function(y){return(y[-1])}, simplify = F)
+  if(force_type == 'ordinal'){
+    action_cols_index <- column_recog_vector(force_type = 'ordinal', action_cols, dataset)
+  }
+  else if(force_type == 'alternate_NA'){
+    action_cols_index <- column_recog_vector(force_type = 'alternate_NA', action_cols, dataset)
+  }
+  return(list(c(action_cols_index), action_levels))
+}
+
+# trial_data <- trial_dataframe
+# x <- list(c('x', 1,2,3), c('doubls', 2,5,6))
+# z <- Alternate_NA_Remove(x, trial_data)
+#
+
+
+Alternate_NA_Remove <- function(input_list, dataset){
+  adjusted_input_list <- column_recog_list('alternate_NA', input_list, dataset)
+  column_indexes <- adjusted_input_list[[1]]
+  NA_values <- adjusted_input_list[[2]]
+#!TODO shift to rcpp?
+  for(i in 1:length(column_indexes)){
+    #check alternate values are found
+    if(any(!(NA_values[[i]] %in% dataset[,column_indexes[i]]))){
+      warning(paste('Alternate NA values', paste(NA_values[[i]][!(NA_values[[i]] %in% dataset[,column_indexes[i]])], collapse = " "), 'not found in data column', column_indexes[i]))
+    }
+    #set the alternate NA values to NA
+    dataset[,column_indexes[i]][dataset[,column_indexes[i]] %in% NA_values[[i]]] <- NA
+  }
+  return(dataset)
+}
+
+
+Ordinal_Force <- function(input_list, dataset){
+  adjusted_input_list <- column_recog_list('ordinal', input_list, dataset)
+  column_indexes <- adjusted_input_list[[1]]
+  ordinal_levels <- adjusted_input_list[[2]]
+#!ToDo shift to rccp
+  for(i in 1:length(column_indexes)){
+    #number of unique values in nominal column does not match stated values
+    if(length(unique(dataset[,column_indexes[i]])) != length(ordinal_levels[[i]])){
+      length_difference <- length(unique(dataset[,column_indexes[i]])) - length(ordinal_levels[[i]])
+      warning('Differing number of levels found in data where an additional')
     }
   }
+
 }
+
 
 data_type_detect <- function(dataset,
                              NLP_force = c(),
-                             ordinal_force = c(),
-                             nominal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
+                             ordinal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
+                             nominal_force = c(),
                              numeric_force = c(),
                              date_force = c(),
-                             alternate_nas = list(), #list(c(“colname1”, 0),c(“colname2”, “hold”))
+                             alternate_nas = list(), #list(c(“colname1”, 0, 99),c(“colname2”, “hold”))
                              replace_nas = F){
-
+  #check input format
   if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
+
+  #remove alternate NAs
+  dataset <- Alternate_NA_Remove(alternate_nas, dataset)
+
+  #determine forced columns
+  NLP_columns_forced <- column_recog_vector('NLP', NLP_force, dataset)
+  Nominal_columns_forced <- column_recog_vector('nominal', nominal_force, dataset)
+  Numeric_columns_forced <- column_recog_vector('numeric', numeric_force, dataset)
+  Date_columns_forced <- column_recog_vector('date', date_force, dataset)
+  Ordinal_columns_forced <- column_recog_list('ordinal', ordinal_force, dataset)
+
+  forced_columns <- c(NLP_columns_forced, Nominal_columns_forced, Numeric_columns_forced,
+                      Date_columns_forced, Ordinal_columns_forced[[1]])
+  if(any(duplicated(forced_columns))){
+    stop(paste('Column', forced_columns[duplicated(forced_columns)], 'has been forced to multiple data types, please reconsider'))
+  }
+
+  columns_to_detect <- (1:ncol(dataset))[-forced_columns]
+
+
 
   # #detecting numeric
   # # 1 : int , 2: float , categorical:
