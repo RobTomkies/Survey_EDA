@@ -193,10 +193,10 @@ Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
   return(dataset)
 }
 
-
+#
 trial_data <- trial_dataframe
 x <- c('ordinal_level_uno','x', 'words') #, c('doubls', 2,5,6)
-z <- Numeric_Type_Detect(input_vector = x, dataset = trial_data)
+z <- Numeric_Type_Detect(x, trial_data, F, T)
 typeof(z$ordinal_level_uno)
 
 
@@ -205,79 +205,108 @@ Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, 
   #clean up input_vector
   input_vector <- column_recog_vector('numeric', input_vector, dataset)
 
-  #set up some of the output columns
-  #proportion of numeric
-  Numprop <- rep(NA, length(input_vector))
-  #boolean if classified as numeric
-  Numeric <- rep(F, length(input_vector))
-  #type of numeric - int or float
-  Numeric_type <- rep(NA, length(input_vector))
-
   #initiate dataframe to hold any split out values if needed
   split_column_hold <-  data.frame(matrix(ncol = length(input_vector), nrow = nrow(dataset)))
 
   #action loop for each data column
   for(i in 1:length(input_vector)){
-    if(force == T){
-      dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-    }
-    else{
-      #prop of non NA values that are non numeric
-      Numprop[i] <- (sum(is.na(suppressWarnings(as.numeric(dataset[,input_vector[i]])))) - (length(dataset[,input_vector[i]])- length(dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])])))/length(dataset[,input_vector[i]])
+    #prop of non NA values that are non numeric
+    Numprop <- (sum(is.na(suppressWarnings(as.numeric(dataset[,input_vector[i]])))) - (length(dataset[,input_vector[i]])- length(dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])])))/length(dataset[,input_vector[i]])
 
-      #greater than 60% numeric information - numeric
-      if(Numprop[i] <= 0.4){
-        if(Numprop[i] == 0){
-          #all numeric
-          Numeric <- T
+    #greater than 60% numeric information - numeric
+    if(Numprop <= 0.4 | force == T){
+      if(Numprop == 0){
+        #all numeric
+        intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
+        #if 10 data points and 9 are int set to int
+        if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
+          dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+        }
+        #otherwise if longer than 10 and 95%
+        else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
+          dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+        }
+        #otherwise set to double/float
+        else{
           dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
         }
-        else{
+      }
+      else{
+        if(force != T){
           warning(paste('60-99.9 percent numeric information present in column', names(dataset)[input_vector[i]],' so treated as such'))
-          Numeric[i] <- T
-          name_trigger <- F
-          if(preserve_nonconform == T){
-            running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
-            while(name_trigger == F){
-              if(running_name %in% names(dataset)){
-                running_name <- paste(running_name, '_.')
-              }
-              else{
-                name_trigger <- T
-              }
+        }
+        else if(force == T){
+          warning(paste('Not all data was numeric in column', names(dataset)[input_vector[i]], 'but forced'))
+        }
+
+        name_trigger <- F
+        if(preserve_nonconform == T){
+          running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
+          while(name_trigger == F){
+            if(running_name %in% names(dataset)){
+              running_name <- paste(running_name, '_.')
             }
-            names(split_column_hold)[i] <- running_name
-
-            #split out the unknow factors which could be free text
-            alternate_data <- dataset[,input_vector[i]]
-            #set the ones that are numeric to NA
-            alternate_data[!is.na(suppressWarnings(as.numeric(alternate_data)))] <- NA
-
-            #convert the ones we can to numeric
-            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-
-            #shift unknown to storage column
-            split_column_hold[i] <- alternate_data
-            rm(alternate_data)
+            else{
+              name_trigger <- T
+            }
           }
-          #if not wanting to preserve other values
+          names(split_column_hold)[i] <- running_name
+
+          #split out the unknow factors which could be free text
+          alternate_data <- dataset[,input_vector[i]]
+          #set the ones that are numeric to NA
+          alternate_data[!is.na(suppressWarnings(as.numeric(alternate_data)))] <- NA
+
+          #convert the ones we can to numeric
+          dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+
+          #int detection
+          intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
+          #if 10 data points and 9 are int set to int
+          if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
+            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+          }
+          #otherwise if longer than 10 and 95%
+          else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
+            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+          }
+          #otherwise set to double/float
+          else{
+            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+          }
+
+
+          #shift unknown to storage column
+          split_column_hold[i] <- alternate_data
+          rm(alternate_data)
+        }
+        #if not wanting to preserve other values
+        else{
+          intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
+          #if 10 data points and 9 are int set to int
+          if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
+            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+          }
+          #otherwise if longer than 10 and 95%
+          else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
+            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
+          }
+          #otherwise set to double/float
           else{
             dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
           }
         }
       }
-      #less than 60% numeric information
-      else{
-        Numeric[i] <- F
-      }
     }
-
+      #less than 60% numeric information
+      #continue
   }
   split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
   dataset <- cbind(dataset, split_column_hold)
   return(dataset)
 }
 
+Nominal_Detect <- function()
 
 data_type_detect <- function(dataset,
                              NLP_force = c(),
@@ -286,7 +315,7 @@ data_type_detect <- function(dataset,
                              numeric_force = c(),
                              date_force = c(),
                              alternate_nas = list(), #list(c(“colname1”, 0, 99),c(“colname2”, “hold”))
-                             replace_nas = F){
+                             preserve_nonconform = T){
   #check input format
   if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
 
