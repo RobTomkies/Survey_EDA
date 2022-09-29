@@ -429,4 +429,10 @@ data_type_detect <- function(dataset,
 }
 
 
-
+#!TODO
+# - shift output of detects if non forced to include which columns have been detected and then the data (list(vector, dataframe))
+# - documentation
+# - testing
+# - testing plan
+# - NLP string formatting
+# - date function maybe?
