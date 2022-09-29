@@ -199,6 +199,8 @@ x <- c('ordinal_level_uno','x', 'words') #, c('doubls', 2,5,6)
 z <- Numeric_Type_Detect(input_vector = x, dataset = trial_data)
 typeof(z$ordinal_level_uno)
 
+
+#get rid of prop storage and think about int vs double - likely late for the eda section
 Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   #clean up input_vector
   input_vector <- column_recog_vector('numeric', input_vector, dataset)
