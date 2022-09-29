@@ -1,4 +1,4 @@
- trial_dataframe <- data.frame(x = c(1,2,3,4,5,6,7,8), y = c(2,3,4,6,7,8,9,5), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7),actual_int = c('1','2','3','4','5','6','7','8'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est'))
+ trial_dataframe <- data.frame(ordinal_level_uno = c(1,2,3,2,3,1,'hello', 'dragon'), x = c(1,2,3,4,3,1,2,2), y = c(2,3,4,6,7,8,9,5), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7),actual_int = c('1','2','3','4','5','6','7','8'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est'))
 #
 # z <- c('x', 'y', 'doubls')
 # column_recog_vector('integer', z,  trial_dataframe)
@@ -124,19 +124,156 @@ Alternate_NA_Remove <- function(input_list, dataset){
 }
 
 
-Ordinal_Force <- function(input_list, dataset){
+# trial_data <- trial_dataframe
+# x <- list(c('ordinal_level_uno', 1,2,3), c('x', 1,2,3)) #, c('doubls', 2,5,6)
+# z <- Ordinal_Force(x, trial_data)
+# z$ordinal_level_uno
+
+Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
+  #column name recognition
   adjusted_input_list <- column_recog_list('ordinal', input_list, dataset)
   column_indexes <- adjusted_input_list[[1]]
   ordinal_levels <- adjusted_input_list[[2]]
-#!ToDo shift to rccp
+
+  #empty dataframe incase new levels need to be created and inputs stored
+  split_column_hold <-  data.frame(matrix(ncol = length(column_indexes), nrow = nrow(dataset)))
+
+  #check the levels stated work with whats present
   for(i in 1:length(column_indexes)){
     #number of unique values in nominal column does not match stated values
+    if(any(!(ordinal_levels[[i]] %in% unique(dataset[,column_indexes[i]])))){
+      stop(paste('Ordinal levels stated are not present in data column', names(dataset)[column_indexes[i]], 'please reconsider'))
+    }
     if(length(unique(dataset[,column_indexes[i]])) != length(ordinal_levels[[i]])){
       length_difference <- length(unique(dataset[,column_indexes[i]])) - length(ordinal_levels[[i]])
-      warning('Differing number of levels found in data where an additional')
-    }
-  }
+      if(preserve_nonconform = F){
+        warning(paste('Differing number of levels found in data where an additional'), length_difference, 'factors were found, these have been removed')
+        #set values that aren't in stated levels and aren't na to auto_unknown
+        dataset[,column_indexes[i]][!(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
+      }
+      else{
+        warning(paste('Differing number of levels found in data where an additional'), length_difference, 'factors were found, these have been separated into secondary _other_levels column and factor set to NA')
 
+        #set up name trigger to ensure no double naming
+        name_trigger <- F
+        running_name <- paste(names(dataset)[column_indexes[i]], '_other_ordinal')
+        while(name_trigger == F){
+          if(running_name %in% names(dataset)){
+            running_name <- paste(running_name, '_.')
+          }
+          else{
+            name_trigger <- T
+          }
+        }
+        names(split_column_hold)[i] <- running_name
+
+        #split out the unknow factors which could be free text
+        alternate_data <- dataset[,column_indexes[i]]
+        #set the ones that are in the levels to NA
+        alternate_data[(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
+
+        #set values that aren't in stated levels and aren't na to auto_unknown
+        dataset[,column_indexes[i]][!(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
+
+        #shift unknown to storage column
+        split_column_hold[i] <- alternate_data
+        rm(alternate_data)
+      }
+
+    }
+    #set column to factor
+    dataset[,column_indexes[i]] <- factor(dataset[,column_indexes[i]], levels = ordinal_levels[[i]])
+  }
+  #remove any columns that were all good with specified levels
+  split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
+
+  #add the split out columns to the dataset
+  dataset <- cbind(dataset, split_column_hold)
+
+  return(dataset)
+}
+
+
+trial_data <- trial_dataframe
+x <- c('ordinal_level_uno','x', 'words') #, c('doubls', 2,5,6)
+z <- Numeric_Type_Detect(input_vector = x, dataset = trial_data)
+typeof(z$ordinal_level_uno)
+
+Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
+  #clean up input_vector
+  input_vector <- column_recog_vector('numeric', input_vector, dataset)
+
+  #set up some of the output columns
+  #proportion of numeric
+  Numprop <- rep(NA, length(input_vector))
+  #boolean if classified as numeric
+  Numeric <- rep(F, length(input_vector))
+  #type of numeric - int or float
+  Numeric_type <- rep(NA, length(input_vector))
+
+  #initiate dataframe to hold any split out values if needed
+  split_column_hold <-  data.frame(matrix(ncol = length(input_vector), nrow = nrow(dataset)))
+
+  #action loop for each data column
+  for(i in 1:length(input_vector)){
+    if(force == T){
+      dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+    }
+    else{
+      #prop of non NA values that are non numeric
+      Numprop[i] <- (sum(is.na(suppressWarnings(as.numeric(dataset[,input_vector[i]])))) - (length(dataset[,input_vector[i]])- length(dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])])))/length(dataset[,input_vector[i]])
+
+      #greater than 60% numeric information - numeric
+      if(Numprop[i] <= 0.4){
+        if(Numprop[i] == 0){
+          #all numeric
+          Numeric <- T
+          dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+        }
+        else{
+          warning(paste('60-99.9 percent numeric information present in column', names(dataset)[input_vector[i]],' so treated as such'))
+          Numeric[i] <- T
+          name_trigger <- F
+          if(preserve_nonconform == T){
+            running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
+            while(name_trigger == F){
+              if(running_name %in% names(dataset)){
+                running_name <- paste(running_name, '_.')
+              }
+              else{
+                name_trigger <- T
+              }
+            }
+            names(split_column_hold)[i] <- running_name
+
+            #split out the unknow factors which could be free text
+            alternate_data <- dataset[,input_vector[i]]
+            #set the ones that are numeric to NA
+            alternate_data[!is.na(suppressWarnings(as.numeric(alternate_data)))] <- NA
+
+            #convert the ones we can to numeric
+            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+
+            #shift unknown to storage column
+            split_column_hold[i] <- alternate_data
+            rm(alternate_data)
+          }
+          #if not wanting to preserve other values
+          else{
+            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
+          }
+        }
+      }
+      #less than 60% numeric information
+      else{
+        Numeric[i] <- F
+      }
+    }
+
+  }
+  split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
+  dataset <- cbind(dataset, split_column_hold)
+  return(dataset)
 }
 
 
@@ -166,8 +303,17 @@ data_type_detect <- function(dataset,
   if(any(duplicated(forced_columns))){
     stop(paste('Column', forced_columns[duplicated(forced_columns)], 'has been forced to multiple data types, please reconsider'))
   }
-
+  #auto detect columns are the remaining ones
   columns_to_detect <- (1:ncol(dataset))[-forced_columns]
+
+  #force columns
+#!TODO repeats the column recog function - look at streamlining
+  dataset <- Ordinal_Force(ordinal_force, dataset, preserve_nonconform = T)
+  dataset<- Numeric_Type_Detect(numeric_force, dataset, preserve_nonconform = T, force = T)
+
+
+
+
 
 
 
