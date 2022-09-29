@@ -4,7 +4,16 @@
 # column_recog_vector('integer', z,  trial_dataframe)
 
 
-
+#' Title
+#'
+#' @param force_type
+#' @param input_vector
+#' @param dataset
+#'
+#' @return
+#' @export
+#'
+#' @examples
 column_recog_vector <- function(force_type, input_vector, dataset){
   output_vector <- rep(NA, length(input_vector))
   if(any(duplicated(input_vector)) & !is.logical(input_vector)){
@@ -79,6 +88,16 @@ column_recog_vector <- function(force_type, input_vector, dataset){
 # z <- column_recog_list('nominal', x, trial_dataframe)
 # z[[2]][[2]]
 
+#' Title
+#'
+#' @param force_type
+#' @param input_list
+#' @param dataset
+#'
+#' @return
+#' @export
+#'
+#' @examples
 column_recog_list <- function(force_type, input_list, dataset){
   if(!(force_type %in% c('ordinal', 'alternate_NA'))){stop('invalid force type in column_recog_list')}
   #check list has been supplied
@@ -107,6 +126,15 @@ column_recog_list <- function(force_type, input_list, dataset){
 #
 
 
+#' Title
+#'
+#' @param input_list
+#' @param dataset
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Alternate_NA_Remove <- function(input_list, dataset){
   if(length(input_list) >= 1){
     adjusted_input_list <- column_recog_list('alternate_NA', input_list, dataset)
@@ -131,6 +159,16 @@ Alternate_NA_Remove <- function(input_list, dataset){
 # z <- Ordinal_Force(x, trial_data)
 # z$ordinal_level_uno
 
+#' Title
+#'
+#' @param input_list
+#' @param dataset
+#' @param preserve_nonconform
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
   #column name recognition
   adjusted_input_list <- column_recog_list('ordinal', input_list, dataset)
@@ -203,6 +241,18 @@ Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
 
 
 #get rid of prop storage and think about int vs double - likely late for the eda section
+
+#' Title
+#'
+#' @param input_vector
+#' @param dataset
+#' @param preserve_nonconform
+#' @param force
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   #clean up input_vector
   input_vector <- column_recog_vector('numeric', input_vector, dataset)
@@ -331,6 +381,17 @@ Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, 
 # z <- Nominal_Detect(xb, trial_data, F, T)
 # typeof(z$x)
 
+#' Title
+#'
+#' @param input_vector
+#' @param dataset
+#' @param preserve_nonconform
+#' @param force
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   input_vector <- column_recog_vector('nominal', input_vector, dataset)
   #initiate dataframe to hold any split out values if needed
@@ -430,10 +491,27 @@ NLP_Convert <- function(input_vector, dataset){
 
 
 # trial_data <- trial_dataframe
-# xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
+# # xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
 # z <- data_type_detect(trial_data)
+# print(z)
+# summary(z)
+
 # typeof(z$x)
 
+#' Title
+#'
+#' @param dataset
+#' @param NLP_force
+#' @param ordinal_force
+#' @param nominal_force
+#' @param numeric_force
+#' @param alternate_nas
+#' @param preserve_nonconform
+#'
+#' @return
+#' @export
+#'
+#' @examples
 data_type_detect <- function(dataset,
                              NLP_force = c(),
                              ordinal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
@@ -472,12 +550,6 @@ data_type_detect <- function(dataset,
   }
   if(length(ordinal_force) >= 1){
     ordinal_force <- column_recog_list('ordinal', ordinal_force, dataset)
-  }
-
-
-
-
-  if(length(ordinal_force) >= 1){
     forced_columns <- c(NLP_force, nominal_force, numeric_force, ordinal_force[[1]])
   }
   else{
@@ -511,11 +583,9 @@ data_type_detect <- function(dataset,
     rm(numeric_forced)
   }
 
-
   if(length(nominal_force) >= 1){
     dataset <- Nominal_Detect(nominal_force, dataset, preserve_nonconform = preserve_nonconform, force = T)
   }
-
 
   if(length(NLP_force) >= 1){
     dataset <- NLP_Convert(NLP_force, dataset)
@@ -566,13 +636,20 @@ data_type_detect <- function(dataset,
   output <- list(data = dataset,
                  original_type = data.frame(data_field = original_names, data_type = original_type),
                  converted_type = data.frame(data_field = original_names, data_type = converted_names))
+  class(output) <- "data_detected"
+  return(output)
 }
 
 
-#!TODO
-# - shift output of detects if non forced to include which columns have been detected and then the data (list(vector, dataframe))
-# - documentation
-# - vignette
-# - testing
-# - testing plan
+print.data_detected <- function(x){
+  data <- x$data
+  pander(head(data))
+}
+
+summary.data_detected <- function(x){
+  data <- x$original_type
+  data <- cbind(data_field = data[,1], original_type = data[,2], converted_type = x$converted_type[,2])
+  pander(data)
+}
+
 
