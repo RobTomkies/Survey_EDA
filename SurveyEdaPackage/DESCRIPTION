@@ -12,8 +12,11 @@ RoxygenNote: 7.2.1
 Imports:
   pander (>= 0.6.5)
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
 LazyData: true
+VignetteBuilder: knitr
