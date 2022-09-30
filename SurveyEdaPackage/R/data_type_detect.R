@@ -1,517 +1,51 @@
- trial_dataframe <- data.frame(ordinal_level_uno = c(1,2,3,2,3,1,'hello', 'dragon',1,2,1), x = c(1,2,3,4,3,1,2,2,2,1,4), y = c(2,3,4,6,7,8,9,5,8,4,1), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7,3.4,4.3,2.1),actual_int = c('1','2','3','4','5','6','7','8', '10','9','99'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est', 'hero', 'ever', 'like'))
-#
-# z <- c('x', 'y', 'doubls')
-# column_recog_vector('integer', z,  trial_dataframe)
-
-
-#' Title
+#'Data Type Detection and Forcing
 #'
-#' @param force_type
-#' @param input_vector
-#' @param dataset
+#' This function receives a dataframe and outputs the dataframe with corrected
+#' data types. The user can force columns to a certain data type via specifying
+#' manually or allow a number of tests on data characteristics to automatically
+#' detect the likely data type. In the common case for survey data where users
+#' can select categories or enter free text and the data is included in one
+#' column, the free text can be split out and preserved in additional columns
+#' that will be added to the dataset.
 #'
-#' @return
+#'@details
+#' For further detail on tests for detection and forcing for data types see:
+#'  - Nominal : Nominal_Detect() function documentation
+#'  - Numeric : Numeric_Type_Detect() function documentation
+#'
+#' As ordinal data is almost impossible to automatically detect, this format is only implemented
+#' when specified. Otherwise categorical data is detected and assumed as nominal.
+#'
+#' Natural Language data (NLP ) is either forced manually or assumed to be the absence of either
+#' categorical (nominal or ordinal), numeric (integer or floating point).
+#'
+#'
+#' @param dataset dataframe ; containing columns of each field and rows containing each record
+#' @param NLP_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type
+#' @param ordinal_force list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the nominal in order you wish them to be handles.
+#' @param nominal_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type
+#' @param numeric_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to numeric data type.
+#' @param alternate_nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
+#' @param preserve_nonconform boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column
+#'
+#' @return A list containing:
+#' -  data : The adjusted dataframe,
+#' -  original_type: the original data type of the input dataframe
+#' -  detected_type: the newly detected
 #' @export
-#'
 #' @examples
-column_recog_vector <- function(force_type, input_vector, dataset){
-  output_vector <- rep(NA, length(input_vector))
-  if(any(duplicated(input_vector)) & !is.logical(input_vector)){
-    warning('type 1: duplicated found in forcing columns - simplified so only one present')
-    input_vector <- input_vector[!duplicated(input_vector)]
-  }
-  #numeric values
-  if(is.numeric(input_vector)){
-    #check for integer inputs
-    if(all(input_vector-floor(input_vector)==0)){
-      output_vector <- input_vector
-    }
-    #check for float input and shift to int
-    else if(is.numeric(input_vector)){
-      warning(paste('Float type number provided for ', force_type,' forcing so converted to integer\n'))
-      output_vector <- as.integer(input_vector)
-    }
-  }
-  #check for logical input (why?)
-  else if(is.logical(input_vector)){
-    if(length(input_vector) != length(names(dataset))){
-      stop(paste('logical forcing vector for ', force_type, ' does not match the length of dataset columns please reconsider \n'))
-    }
-    output_vector <- which(input_vector == T)
-  }
-  else if(is.character(input_vector)){
-    if(all(input_vector %in% names(dataset))){
-      output_vector <- match(input_vector, names(dataset))
-    }
-    else{
-      warning(paste('Not all names provided in ',force_type, ' forcing found in dataset, attempting to coerce\n' ))
-    }
-    #max length vector could be
-    ints_as_strings <- rep(NA,length(input_vector))
-    numeric_as_strings <- rep(NA,length(input_vector))
-#todo! shift to rcpp
-    for(i in 1:length(input_vector)){
-      #integer as string and not in names
-      if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.integer(input_vector[i])))) & (suppressWarnings(as.integer(input_vector[i])) == suppressWarnings(as.numeric(input_vector[i])))){
-        ints_as_strings[i] <- input_vector[i]
-        output_vector[i] <- as.integer(input_vector[i])
-      }
-      #numeric but not integer and string
-      else if((!(input_vector[i] %in% names(dataset))) & (suppressWarnings(!is.na(as.numeric(input_vector[i])))) & (suppressWarnings(as.integer(input_vector[i])) != suppressWarnings(as.numeric(input_vector[i])))){
-        output_vector[i] <- as.integer(input_vector[i])
-        numeric_as_strings[i] <- input_vector[i]
-      }
-      #name of column used
-      else if(input_vector[i] %in% names(dataset)){
-        output_vector[i] <- which(names(dataset) == input_vector[i])
-      }
-      else(stop(paste('could not find column name ', input_vector[i], ' from ', force_type, ' forcing. Please reconsider\n')))
-    }
-    #remove NA values
-    ints_as_strings <- ints_as_strings[!is.na(ints_as_strings)]
-    numeric_as_strings <- numeric_as_strings[!is.na(numeric_as_strings)]
-    if(any(!is.na(ints_as_strings))){
-      warning(paste('Integer names ',paste(ints_as_strings, collapse = ', '),' not found for ', force_type,' forcing but successfully coerced to integer index\n', collapse = ""))
-    }
-    if(any(!is.na(numeric_as_strings))){
-      warning(paste('Numeric names ',paste(numeric_as_strings, collapse = ', '),' not found for ', force_type,' forcing but successfully coerced to integer index\n',collapse = ""))
-    }
-  }
-  if(any(duplicated(output_vector))){
-    warning('type 2: duplicate columns for forcing found - simplified to only one\n')
-    output_vector <- output_vector[!duplicated(output_vector)]
-  }
-  return(as.integer(output_vector))
-}
-
-# x <- list(c('x', 1,2,3), c('doubls', 4,5,6))
-# z <- column_recog_list('nominal', x, trial_dataframe)
-# z[[2]][[2]]
-
-#' Title
+#' data_type_detect(dataset = example_dataset,
+#'                  NLP_force = c(1,2,3),
+#'                  ordinal_force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),
+#'                  nominal_force = c('col5','col7'),
+#'                  numeric_force = c(14, 'colb'),
+#'                  alternate_nas = list(c('col1', 'error')),
+#'                  preserve_nonconform = T)
 #'
-#' @param force_type
-#' @param input_list
-#' @param dataset
-#'
-#' @return
-#' @export
-#'
-#' @examples
-column_recog_list <- function(force_type, input_list, dataset){
-  if(!(force_type %in% c('ordinal', 'alternate_NA'))){stop('invalid force type in column_recog_list')}
-  #check list has been supplied
-  if(!is.list(input_list)){
-    stop(paste('Input for', force_type, 'is not of format list, please see documentation for details of correct input'))
-  }
-  #check all elements are vectors
-  if(!all(sapply(input_list, function(y) is.vector(y) & !is.list(y)))){
-    stop(paste('Input components of list for', force_type, 'is not of format vector, please see documentation for details of correct input'))
-  }
-  #return first element in each vector
-  action_cols <- sapply(input_list, function(y){return(y[1])})
-  action_levels <- sapply(input_list, function(y){return(y[-1])}, simplify = F)
-  if(force_type == 'ordinal'){
-    action_cols_index <- column_recog_vector(force_type = 'ordinal', action_cols, dataset)
-  }
-  else if(force_type == 'alternate_NA'){
-    action_cols_index <- column_recog_vector(force_type = 'alternate_NA', action_cols, dataset)
-  }
-  return(list(c(action_cols_index), action_levels))
-}
+#' data_type_detect(example_dataset,
+#'                  nominal_force = c('col5','col7'),
+#'                  alternate_nas = list(c('col1', 'error')))
 
-# trial_data <- trial_dataframe
-# x <- list(c('x', 1,2,3), c('doubls', 2,5,6))
-# z <- Alternate_NA_Remove(x, trial_data)
-#
-
-
-#' Title
-#'
-#' @param input_list
-#' @param dataset
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Alternate_NA_Remove <- function(input_list, dataset){
-  if(length(input_list) >= 1){
-    adjusted_input_list <- column_recog_list('alternate_NA', input_list, dataset)
-    column_indexes <- adjusted_input_list[[1]]
-    NA_values <- adjusted_input_list[[2]]
-    #!TODO shift to rcpp?
-    for(i in 1:length(column_indexes)){
-      #check alternate values are found
-      if(any(!(NA_values[[i]] %in% dataset[,column_indexes[i]]))){
-        warning(paste('Alternate NA values', paste(NA_values[[i]][!(NA_values[[i]] %in% dataset[,column_indexes[i]])], collapse = " "), 'not found in data column', column_indexes[i]))
-      }
-      #set the alternate NA values to NA
-      dataset[,column_indexes[i]][dataset[,column_indexes[i]] %in% NA_values[[i]]] <- NA
-    }
-  }
-  return(dataset)
-}
-
-
-# trial_data <- trial_dataframe
-# x <- list(c('ordinal_level_uno', 1,2,3), c('x', 1,2,3)) #, c('doubls', 2,5,6)
-# z <- Ordinal_Force(x, trial_data)
-# z$ordinal_level_uno
-
-#' Title
-#'
-#' @param input_list
-#' @param dataset
-#' @param preserve_nonconform
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
-  #column name recognition
-  adjusted_input_list <- column_recog_list('ordinal', input_list, dataset)
-  column_indexes <- adjusted_input_list[[1]]
-  ordinal_levels <- adjusted_input_list[[2]]
-
-  #empty dataframe incase new levels need to be created and inputs stored
-  split_column_hold <-  data.frame(matrix(ncol = length(column_indexes), nrow = nrow(dataset)))
-
-  #check the levels stated work with whats present
-  for(i in 1:length(column_indexes)){
-    #number of unique values in nominal column does not match stated values
-    if(any(!(ordinal_levels[[i]] %in% unique(dataset[,column_indexes[i]])))){
-      stop(paste('Ordinal levels stated are not present in data column', names(dataset)[column_indexes[i]], 'please reconsider'))
-    }
-    if(length(unique(dataset[,column_indexes[i]])) != length(ordinal_levels[[i]])){
-      length_difference <- length(unique(dataset[,column_indexes[i]])) - length(ordinal_levels[[i]])
-      if(preserve_nonconform == F){
-        warning(paste('Differing number of levels found in data where an additional'), length_difference, 'factors were found, these have been removed')
-        #set values that aren't in stated levels and aren't na to auto_unknown
-        dataset[,column_indexes[i]][!(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
-      }
-      else{
-        warning(paste('Differing number of levels found in data where an additional'), length_difference, 'factors were found, these have been separated into secondary _other_levels column and factor set to NA')
-
-        #set up name trigger to ensure no double naming
-        name_trigger <- F
-        running_name <- paste(names(dataset)[column_indexes[i]], '_other_ordinal')
-        while(name_trigger == F){
-          if(running_name %in% names(dataset)){
-            running_name <- paste(running_name, '_.')
-          }
-          else{
-            name_trigger <- T
-          }
-        }
-        names(split_column_hold)[i] <- running_name
-
-        #split out the unknow factors which could be free text
-        alternate_data <- dataset[,column_indexes[i]]
-        #set the ones that are in the levels to NA
-        alternate_data[(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
-
-        #set values that aren't in stated levels and aren't na to auto_unknown
-        dataset[,column_indexes[i]][!(dataset[,column_indexes[i]] %in% ordinal_levels[[i]])] <- NA
-
-        #shift unknown to storage column
-        split_column_hold[i] <- alternate_data
-        rm(alternate_data)
-      }
-
-    }
-    #set column to factor
-    dataset[,column_indexes[i]] <- factor(dataset[,column_indexes[i]], levels = ordinal_levels[[i]])
-  }
-  #remove any columns that were all good with specified levels
-  split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
-
-  #add the split out columns to the dataset
-  dataset <- cbind(dataset, split_column_hold)
-
-  return(dataset)
-}
-
-#
-# trial_data <- trial_dataframe
-# x <- c('ordinal_level_uno','x', 'words') #, c('doubls', 2,5,6)
-# z <- Numeric_Type_Detect(x, trial_data, F, T)
-# typeof(z$ordinal_level_uno)
-
-
-#get rid of prop storage and think about int vs double - likely late for the eda section
-
-#' Title
-#'
-#' @param input_vector
-#' @param dataset
-#' @param preserve_nonconform
-#' @param force
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
-  #clean up input_vector
-  input_vector <- column_recog_vector('numeric', input_vector, dataset)
-
-  #initiate dataframe to hold any split out values if needed
-  split_column_hold <-  data.frame(matrix(ncol = length(input_vector), nrow = nrow(dataset)))
-
-  integer_record <- rep(F, length(input_vector))
-  float_record <- rep(F, length(input_vector))
-
-  #action loop for each data column
-  for(i in 1:length(input_vector)){
-    #prop of non NA values that are non numeric
-    Numprop <- (sum(is.na(suppressWarnings(as.numeric(dataset[,input_vector[i]])))) - (length(dataset[,input_vector[i]])- length(dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])])))/length(dataset[,input_vector[i]])
-
-    #greater than 60% numeric information - numeric
-    if(Numprop <= 0.4 | force == T){
-      if(Numprop == 0){
-        #all numeric
-        intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
-        #if 10 data points and 9 are int set to int
-        if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
-          dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-          integer_record[i] <- T
-        }
-        #otherwise if longer than 10 and 95%
-        else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
-          dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-          integer_record[i] <- T
-        }
-        #otherwise set to double/float
-        else{
-          dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-          float_record[i] <- T
-        }
-      }
-      else{
-        if(force != T){
-          warning(paste('60-99.9 percent numeric information present in column', names(dataset)[input_vector[i]],' so treated as such'))
-        }
-        else if(force == T){
-          warning(paste('Not all data was numeric in column', names(dataset)[input_vector[i]], 'but forced'))
-        }
-
-        name_trigger <- F
-        if(preserve_nonconform == T){
-          running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
-          while(name_trigger == F){
-            if(running_name %in% names(dataset)){
-              running_name <- paste(running_name, '_.')
-            }
-            else{
-              name_trigger <- T
-            }
-          }
-          names(split_column_hold)[i] <- running_name
-
-          #split out the unknow factors which could be free text
-          alternate_data <- dataset[,input_vector[i]]
-          #set the ones that are numeric to NA
-          alternate_data[!is.na(suppressWarnings(as.numeric(alternate_data)))] <- NA
-
-          #convert the ones we can to numeric
-          dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-
-          #int detection - split out NAs
-          intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
-          #if 10 data points and 9 are int set to int
-          if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
-            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-            integer_record[i] <- T
-          }
-          #otherwise if longer than 10 and 95%
-          else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
-            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-            integer_record[i] <- T
-          }
-          #otherwise set to double/float
-          else{
-            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-            float_record[i] <- T
-          }
-
-
-          #shift unknown to storage column
-          split_column_hold[i] <- alternate_data
-          rm(alternate_data)
-        }
-        #if not wanting to preserve other values
-        else{
-          intnum_Data <- dataset[,input_vector[i]][!is.na(dataset[,input_vector[i]])]
-          #if 10 data points and 9 are int set to int
-          if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.9 & length(intnum_Data) <= 10){
-            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-            integer_record[i] <- T
-          }
-          #otherwise if longer than 10 and 95%
-          else if(sum(intnum_Data==suppressWarnings(as.integer(intnum_Data)), na.rm = T)/length(intnum_Data) >= 0.95 & length(intnum_Data) > 10){
-            dataset[,input_vector[i]] <- suppressWarnings(as.integer(dataset[,input_vector[i]]))
-            integer_record[i] <- T
-          }
-          #otherwise set to double/float
-          else{
-            dataset[,input_vector[i]] <- suppressWarnings(as.numeric(dataset[,input_vector[i]]))
-            float_record[i] <- T
-          }
-        }
-      }
-    }
-      #less than 60% numeric information
-      #continue
-  }
-  split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
-  dataset <- cbind(dataset, split_column_hold)
-  if(force == T){
-    return(list(integers = input_vector[integer_record], floats = input_vector[float_record], data = dataset))
-  }
-  else if(force == F){
-    return(list(integers = input_vector[integer_record], floats = input_vector[float_record],data = dataset))
-  }
-}
-
-
-# trial_data <- trial_dataframe
-# xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
-# z <- Nominal_Detect(xb, trial_data, F, T)
-# typeof(z$x)
-
-#' Title
-#'
-#' @param input_vector
-#' @param dataset
-#' @param preserve_nonconform
-#' @param force
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
-  input_vector <- column_recog_vector('nominal', input_vector, dataset)
-  #initiate dataframe to hold any split out values if needed
-  split_column_hold <-  data.frame(matrix(ncol = length(input_vector), nrow = nrow(dataset)))
-  detect_record <- rep(F, length(input_vector))
-  for(i in 1:length(input_vector)){
-    working_data <- dataset[,input_vector[i]]
-    if(force == T){
-      dataset[,input_vector[i]] <- factor(working_data)
-    }
-    if(length(working_data) <= 20 & force == F){
-      categorical <- table(working_data)>(0.1*length(working_data))
-      prop_cat <- sum(table(working_data)[categorical])/length(working_data)
-      if(prop_cat >= 0.8 & preserve_nonconform == T){
-        detect_record[i] <- T
-        #set up name trigger to ensure no double naming
-        name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
-        while(name_trigger == F){
-          if(running_name %in% names(dataset)){
-            running_name <- paste(running_name, '_.')
-          }
-          else{
-            name_trigger <- T
-          }
-        }
-        names(split_column_hold)[i] <- running_name
-        alternate_data <- working_data
-        #set data thats in categories to NA
-        alternate_data[as.character(working_data) %in% (names(table(working_data))[categorical])] <- NA
-        #set data thats not in categories to NA
-        working_data[!(as.character(working_data) %in% (names(table(working_data))[categorical]))] <- NA
-        split_column_hold[i] <- alternate_data
-        dataset[,input_vector[i]] <- factor(working_data)
-        rm(alternate_data)
-        rm(working_data)
-      }
-      else if(prop_cat >= 0.8 & preserve_nonconform == F){
-        detect_record[i] <- T
-        working_data[!(working_data %in% names(table(working_data))[categorical])] <- NA
-        dataset[,input_vector[i]] <- factor(working_data)
-        rm(working_data)
-      }
-    }
-    else if (length(working_data) > 20 & force == F){
-      categorical <- table(working_data)>(0.05*length(working_data))
-      prop_cat <- sum(table(working_data)[categorical])/length(working_data)
-      if(prop_cat >= 0.9 & preserve_nonconform == T){
-        detect_record[i] <- T
-        #set up name trigger to ensure no double naming
-        name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
-        while(name_trigger == F){
-          if(running_name %in% names(dataset)){
-            running_name <- paste(running_name, '_.')
-          }
-          else{
-            name_trigger <- T
-          }
-        }
-        names(split_column_hold)[i] <- running_name
-        alternate_data <- working_data
-        #set data thats in categories to NA
-        alternate_data[as.character(working_data) %in% (names(table(working_data))[categorical])] <- NA
-        #set data thats not in categories to NA
-        working_data[!(as.character(working_data) %in% (names(table(working_data))[categorical]))] <- NA
-        split_column_hold[i] <- alternate_data
-        dataset[,input_vector[i]] <- factor(working_data)
-        rm(alternate_data)
-        rm(working_data)
-      }
-      else if(prop_cat >= 0.95 & preserve_nonconform == F){
-        detect_record[i] <- T
-        working_data[!(working_data %in% names(table(working_data))[categorical])] <- NA
-        dataset[,input_vector[i]] <- factor(working_data)
-        rm(working_data)
-      }
-    }
-  }
-  split_column_hold <- Filter(function(x)!all(is.na(x)), split_column_hold)
-  dataset <- cbind(dataset, split_column_hold)
-  if(force == T){
-    return(dataset)
-  }
-  else if(force == F){
-    return(list(detected = input_vector[detect_record],data = dataset))
-  }
-}
-
-NLP_Convert <- function(input_vector, dataset){
-  input_vector <- column_recog_vector('NLP', input_vector, dataset)
-  for(i in 1:length(input_vector)){
-    dataset[,input_vector[i]] <- as.character(dataset[,input_vector[i]])
-  }
-  return(dataset)
-}
-
-
-# trial_data <- trial_dataframe
-# # xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
-# z <- data_type_detect(trial_data)
-# print(z)
-# summary(z)
-
-# typeof(z$x)
-
-#' Title
-#'
-#' @param dataset
-#' @param NLP_force
-#' @param ordinal_force
-#' @param nominal_force
-#' @param numeric_force
-#' @param alternate_nas
-#' @param preserve_nonconform
-#'
-#' @return
-#' @export
-#'
-#' @examples
 data_type_detect <- function(dataset,
                              NLP_force = c(),
                              ordinal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
@@ -652,4 +186,10 @@ summary.data_detected <- function(x){
   pander(data)
 }
 
+# trial_data <- trial_dataframe
+# # xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
+# z <- data_type_detect(trial_data)
+# print(z)
+# summary(z)
 
+# typeof(z$x)
