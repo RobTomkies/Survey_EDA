@@ -57,6 +57,7 @@ data_type_detect <- function(dataset,
   if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
 
 
+
   #initiate_vectors
 
   #determine original data type
@@ -170,17 +171,22 @@ data_type_detect <- function(dataset,
   output <- list(data = dataset,
                  original_type = data.frame(data_field = original_names, data_type = original_type),
                  converted_type = data.frame(data_field = original_names, data_type = converted_names))
-  class(output) <- "data_detected"
+  class(output) <- c("data_detected", class(output))
   return(output)
 }
 
 
+
+
+#' @export
 print.data_detected <- function(x){
   x <- unclass(x)
   data <- x$data
   pander(head(data))
 }
 
+
+#' @export
 summary.data_detected <- function(x){
   x <- unclass(x)
   data <- x$original_type

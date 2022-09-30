@@ -2,13 +2,21 @@
 % Please edit documentation in R/Ordinal_Force.R
 \name{Ordinal_Force}
 \alias{Ordinal_Force}
-\title{Title}
+\title{Ordinal Data Forcing}
 \usage{
 Ordinal_Force(input_list, dataset, preserve_nonconform = T)
 }
 \arguments{
-\item{preserve_nonconform}{}
+\item{input_list}{list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the nominal in order you wish them to be handles.}
+
+\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
+
+\item{preserve_nonconform}{boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column}
 }
 \description{
-Title
+Ordinal Data Forcing
+}
+\examples{
+Ordinal_Force(list(c('x', 1, 2)), trial_data)
+
 }

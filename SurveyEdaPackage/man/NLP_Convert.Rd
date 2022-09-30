@@ -2,13 +2,15 @@
 % Please edit documentation in R/NLP_Convert.R
 \name{NLP_Convert}
 \alias{NLP_Convert}
-\title{Title}
+\title{Natural Language Type Forcing}
 \usage{
 NLP_Convert(input_vector, dataset)
 }
 \arguments{
-\item{dataset}{}
+\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
+
+\item{input_vectorvector}{; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type}
 }
 \description{
-Title
+Natural Language Type Forcing
 }

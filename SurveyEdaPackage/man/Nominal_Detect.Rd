@@ -7,15 +7,43 @@
 Nominal_Detect(input_vector, dataset, preserve_nonconform = T, force = F)
 }
 \arguments{
-\item{force}{}
+\item{input_vector}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type}
+
+\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
+
+\item{preserve_nonconform}{boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column}
+
+\item{force}{boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them}
+}
+\value{
+dataframe containing the adjusted dataset
 }
 \description{
 This function receives a dataframe and outputs the dataframe with nominal columns
 either forced to nominal or detected and converted to nominal. The user can
 force columns to a certain data type via specifying manually or allow a
-number of tests on data characteristics to automatically detect the likely
-data type. In the common case for survey data where users
+number of tests on data characteristics to automatically detect if nominal or not.
+In the common case for survey data where users
 can select categories or enter free text and the data is included in one
 column, the free text can be split out and preserved in additional columns
 that will be added to the dataset.
+}
+\details{
+It is recommended that if not forcing but auto detection that function data_type_detect() is used instead.
+
+Categorical data detection where unforced is split in to two approaches.
+
+Where data is comprised of 20 or fewer records:
+\itemize{
+\item a value in the data is considered potentially nominal if over 10\% of values are that value
+\item if over 80\% of records are made up of potentially categorical values we consider the field as nominal
+}
+
+Where data is comprised of 21 or more records:
+\itemize{
+\item a value in the data is considered potentially nominal if over 5\% of values are that value
+\item if over 90\% of records are made up of potentially categorical values we consider the field as nominal
+}
+
+Of course if this is ineffective at detecting columns can be manually forced.
 }

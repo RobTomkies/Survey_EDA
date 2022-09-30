@@ -2,13 +2,39 @@
 % Please edit documentation in R/Numeric_Type_Detect.R
 \name{Numeric_Type_Detect}
 \alias{Numeric_Type_Detect}
-\title{Title}
+\title{Numeric Data Type Detection and Forcing}
 \usage{
 Numeric_Type_Detect(input_vector, dataset, preserve_nonconform = T, force = F)
 }
 \arguments{
-\item{force}{}
+\item{input_vector}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type}
+
+\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
+
+\item{preserve_nonconform}{boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column}
+
+\item{force}{boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them}
 }
 \description{
-Title
+This function receives a dataframe and outputs the dataframe with numeric columns
+either forced to integer or floating point or detected and converted to one or the other. The user can
+force columns to a certain data type via specifying manually or allow a
+number of tests on data characteristics to automatically detect if numeric or not.
+In the common case for survey data where users
+can select categories or enter free text and the data is included in one
+column, the free text can be split out and preserved in additional columns
+that will be added to the dataset.
+}
+\details{
+It is recommended that if not forcing but auto detection that function data_type_detect() is used instead.
+
+Categorical data detection where unforced is split in to two stages.
+\itemize{
+\item Firstly whether the data is numeric or not by seeing if over 60\% is numeric information.
+\item If this is so and the data is less than 20 records long, if over 90\% of the data is integer based then overall we classify as integer
+\item If numeric and over 20 records long, if over 95\% is integer then we classify as interger
+\item If either of the last two steps fail but still over 60\% numeric information we classify as floating point numeric data
+}
+
+Of course if this is ineffective at detecting columns can be manually forced.
 }
