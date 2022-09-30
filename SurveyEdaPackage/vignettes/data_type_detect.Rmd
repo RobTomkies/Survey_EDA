@@ -18,3 +18,20 @@ knitr::opts_chunk$set(
 library(SurveyEdaPackage)
 ```
 
+# Data Type Detection 
+
+This function receives a dataframe and outputs the dataframe with corrected data types. The user can force columns to a certain data type via specifying manually or allow a number of tests on data characteristics to automatically detect the likely data type. In the common case for survey data where users can select categories or enter free text and the data is included in one column, the free text can be split out and preserved in additional columns that will be added to the dataset.
+
+## Example Dataset
+
+The examples in this vignette will utilise the example dataset provided with the dataset. This dataset is simple with a range of data types provided. 
+
+## Basic Implementation
+
+The simplest way to implement this function is to allow the function to be fully automatic in detecting the type of data that it believes is present. This is illistrated below where we can see the original input data format 
+
+```{r}
+summary(data_type_detect(basic_test_data))
+print(data_type_detect(basic_test_data))
+```
+
