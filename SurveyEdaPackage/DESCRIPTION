@@ -10,7 +10,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports:
-  pander (>= 0.6.5)
+    pander
 Suggests: 
     knitr,
     rmarkdown,

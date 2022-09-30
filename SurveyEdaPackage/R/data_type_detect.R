@@ -176,11 +176,13 @@ data_type_detect <- function(dataset,
 
 
 print.data_detected <- function(x){
+  x <- unclass(x)
   data <- x$data
   pander(head(data))
 }
 
 summary.data_detected <- function(x){
+  x <- unclass(x)
   data <- x$original_type
   data <- cbind(data_field = data[,1], original_type = data[,2], converted_type = x$converted_type[,2])
   pander(data)
@@ -191,5 +193,7 @@ summary.data_detected <- function(x){
 # z <- data_type_detect(trial_data)
 # print(z)
 # summary(z)
+
+
 
 # typeof(z$x)
