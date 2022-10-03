@@ -14,12 +14,22 @@ Data_Describe <- function(dataset,
 
 
   #detect and correct for data types, includes many error catching steps.
-  updated_data <- data_type_detect(dataset, NLP_force = NLP.force, ordinal_force = ordinal.force,
+  updated_data <- SurveyEdaPackage::data_type_detect(dataset, NLP_force = NLP.force, ordinal_force = ordinal.force,
                    nominal_force = nominal.force, numeric_force = numeric.force,
                    alternate_nas = alternate.nas,
                    preserve_nonconform = preserve.nonconform)
   #clean up original input data
   rm(dataset)
+
+  #number of identicle rows
+  if(remove.repeat == T){
+    repeat_row_count <- nrow(updated_data$data)
+    updated_data$data <- unique(updated_data$data)
+    repeat_row_count <- repeat_row_count - nrow(updated_data$data)
+  }
+  else{
+    repeat_row_count <- nrow(updated_data$data) - nrow(unique(updated_data$data))
+  }
 
   #dimensions - new data
   updated_ncol <- ncol(updated_data$data)
@@ -28,10 +38,7 @@ Data_Describe <- function(dataset,
   #memory
   memory_size <- object.size(updated_data$data)
 
-  #number of identicle rows
-  if(remove.repeat == T){
-    updated_data <- dplyr::distinct(updated_data)
-  }
+
 
 
   #datatypes
@@ -67,7 +74,8 @@ Data_Describe <- function(dataset,
   #pad vectors
   length(complete) <- length(u10)<- length(mt10_25)<- length(mt25_u50)<- length(mt50_u75)<- length(mt75) <- ML
   #bind
-  missingness_groups <- cbind(complete, u10,mt10_25, mt25_u50, mt50_u75, mt75)
+  missingness_groups <- data.frame(cbind(complete, u10,mt10_25, mt25_u50, mt50_u75, mt75))
+  names(missingness_groups) <- c('Complete', '>0 to 10%', '>10 to 25%', '>25 to 50%', '>50 to 75%', '>75%' )
 
   output <- list(dimensions = data.frame(nrow = c(original = original_nrow , adjusted = updated_nrow),
                                          ncol = c(original = original_ncol , adjusted = updated_ncol)),
@@ -76,6 +84,7 @@ Data_Describe <- function(dataset,
                  data_type_names = dt_type_frame,
                  missingness_percentage = missingness_vector,
                  grouped_missingness = missingness_groups,
+                 repeat_rows = repeat_row_count,
                  data = updated_data$data
                  )
   class(output) <- 'data_describe'
@@ -85,13 +94,16 @@ Data_Describe <- function(dataset,
 #' @export
 print.data_describe <- function(x){
   x <- unclass(x)
-  pander(x$dimensions)
+  pander(x$dimensions, caption = "Data Dimensions")
 
-  output_dt_type <- x$data_type_names
-  output_dt_type[is.na(output_dt_type)] <- ""
-  pander(output_dt_type)
+  general_stats <- data.frame(rbind(c(x$repeat_rows, x$memory_size)))
+  names(general_stats) <- c('Identical Rows Count', 'Memory Size (B)')
+  pander(general_stats, caption = "General Data Statistics")
+
+  pander(x$data_type_conversion, caption = "Original and detected data type converted to")
 
   output_dt_mis <- x$grouped_missingness
   output_dt_mis[is.na(output_dt_mis)] <- ""
-  pander(output_dt_mis)
+  pander(output_dt_mis, caption = "Data fields by Missingness (%)", split.cells = 12)
 }
+
