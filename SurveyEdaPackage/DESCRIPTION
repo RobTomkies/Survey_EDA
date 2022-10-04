@@ -19,5 +19,8 @@ Config/testthat/edition: 3
 Depends: 
     R (>= 2.10),
     pander (>= 0.6.5)
+    ggplot2 (>= 3.3.6)
+    dplyr (>= 1.0.10)
+    ggpubr (>=	0.4.0)
 LazyData: true
 VignetteBuilder: knitr

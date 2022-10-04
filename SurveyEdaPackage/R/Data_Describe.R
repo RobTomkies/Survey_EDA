@@ -107,3 +107,55 @@ print.data_describe <- function(x){
   pander(output_dt_mis, caption = "Data fields by Missingness (%)", split.cells = 12)
 }
 
+#' @export
+plot.data_describe <- function(x){
+  x <- unclass(x)
+  data_type_table <- table(x$data_type_conversion['converted type'])
+  lbls1 <- paste(names(data_type_table), "\n", data_type_table, sep="")
+
+  df_data_type <- x$data_type_conversion %>%
+    group_by(`converted type`) %>% # Variable to be transformed
+    count() %>%
+    ungroup() %>%
+    mutate(perc = `n` / sum(`n`)) %>%
+    arrange(perc) %>%
+    mutate(labels = scales::percent(perc))
+
+  p_dtype <- ggplot(df_data_type, aes(x = "", y = perc, fill = `converted type`)) +
+    geom_col() + theme_void()+
+    geom_text(aes(label = labels),
+              position = position_stack(vjust = 0.5))+
+    coord_polar(theta = "y") +ggtitle("Data Types Present")+
+    theme(plot.title = element_text(hjust = 0.5))
+
+
+  counts <- c(sum(!is.na(x$grouped_missingness['Complete'])),
+                              sum(!is.na(x$grouped_missingness['>0 to 10%'])),
+                              sum(!is.na(x$grouped_missingness['>10 to 25%'])),
+                              sum(!is.na(x$grouped_missingness['>25 to 50%'])),
+                              sum(!is.na(x$grouped_missingness['>50 to 75%'])),
+                              sum(!is.na(x$grouped_missingness['>75%'])))
+  category <- c('Complete', '>0 to 10%', '>10 to 25%', '>25 to 50%', '>50 to 75%', '>75%' )[]
+
+  df_missing <- data.frame(counts, category) %>%
+    filter(counts > 0) %>%
+    mutate(perc = `counts` / sum(`counts`)) %>%
+    arrange(perc) %>%
+    mutate(labels = scales::percent(perc))
+
+  p_missing <- ggplot(df_missing, aes(x = "", y = perc, fill = category)) +
+    geom_col() +
+    geom_text(aes(label = labels),
+              position = position_stack(vjust = 0.5))+
+    theme_void()+
+    coord_polar(theta = "y") +ggtitle("Missingness of data")+
+    theme(plot.title = element_text(hjust = 0.5))
+
+  ggarrange(p_missing, p_dtype, ncol = 2)
+}
+
+# plotting structure:
+# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
+
+# missingness:
+# https://jenslaufer.com/data/analysis/visualize_missing_values_with_ggplot.html
