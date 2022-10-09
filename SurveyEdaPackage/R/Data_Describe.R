@@ -121,7 +121,7 @@ plot.data_describe <- function(x){
     arrange(perc) %>%
     mutate(labels = scales::percent(perc))
 
-  p_dtype <- ggplot(df_data_type, aes(x = "", y = perc, fill = `converted type`)) +
+  p_dtype <- ggplot2::ggplot(df_data_type, aes(x = "", y = perc, fill = `converted type`)) +
     geom_col() + theme_void()+
     geom_text(aes(label = labels),
               position = position_stack(vjust = 0.5))+
@@ -143,7 +143,7 @@ plot.data_describe <- function(x){
     arrange(perc) %>%
     mutate(labels = scales::percent(perc))
 
-  p_missing <- ggplot(df_missing, aes(x = "", y = perc, fill = category)) +
+  p_missing <- ggplot2::ggplot(df_missing, aes(x = "", y = perc, fill = category)) +
     geom_col() +
     geom_text(aes(label = labels),
               position = position_stack(vjust = 0.5))+
@@ -151,8 +151,24 @@ plot.data_describe <- function(x){
     coord_polar(theta = "y") +ggtitle("Missingness of data")+
     theme(plot.title = element_text(hjust = 0.5))
 
-  ggarrange(p_missing, p_dtype, ncol = 2)
+  missing_graphic <- x$data %>%
+    mutate(id = row_number()) %>%
+    gather(-id, key = "key", value = "val") %>%
+    mutate(isna = is.na(val)) %>%
+    ggplot(aes(key, id, fill = isna)) +
+    geom_raster(alpha=0.8) +
+    theme(axis.text.y = element_text(angle = 45)) +
+    scale_fill_manual(name = "",
+                      values = c('steelblue', 'tomato3'),
+                      labels = c("Present", "Missing")) +
+    labs(x = "Variable",
+         y = "Row Number", title = "Missing values in rows") +
+    coord_flip()
+
+  ggarrange(ggarrange(p_missing, p_dtype, ncol = 2), missing_graphic, nrow = 2)
+
 }
+
 
 # plotting structure:
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
