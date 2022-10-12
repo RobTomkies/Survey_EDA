@@ -194,12 +194,4 @@ summary.data_detected <- function(x){
   pander(data)
 }
 
-# trial_data <- trial_dataframe
-# # xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
-# z <- data_type_detect(trial_data)
-# print(z)
-# summary(z)
 
-
-
-# typeof(z$x)
