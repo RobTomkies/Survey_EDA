@@ -63,7 +63,7 @@ Numeric_Uni_EDA <- function(dataset,
   #start of returning rows that take up greater than 20%
   gt20flag <- lapply(cbind(integer_data, double_data), function(x)return(names(table(x))[(table(x)/length(x)) >= 0.2]))
 
-  outputs <- list(Integer_Characteristics = int_output_char, FLoat_Characteristics= float_output_char,
+  outputs <- list(Integer_Characteristics = int_output_char, Float_Characteristics= float_output_char,
                   Interger_Data = integer_data, Double_Data = double_data, GT_20pcnt_Flag = gt20flag)
   class(outputs) <- 'Numeric_EDA'
   return(outputs)
@@ -106,12 +106,62 @@ print.Numeric_EDA <- function(x){
 
 #' @export
 summary.Numeric_EDA <- function(x){
+  x <- unclass(x)
+  integer_names <- names(x$Interger_Data)
+  num_o_ints <- length(integer_names)
+  float_names <- names(x$Double_Data)
+  num_o_floats <- length(float_names)
+  variables <- length(x$Integer_Characteristics)
 
+  output_int_df <- data.frame(matrix(ncol = variables, nrow = num_o_ints))
+  names(output_int_df) <- names(x$Integer_Characteristics)
+  rownames(output_int_df) <- integer_names
+
+  for(i in 1:num_o_ints){
+    for(j in 1:variables)
+    output_int_df[i,j] = sapply(x$Integer_Characteristics[[j]][i], paste, collapse = ", ")
+  }
+
+  output_float_df <- data.frame(matrix(ncol = variables, nrow = num_o_floats))
+  names(output_float_df) <- names(x$Float_Characteristics)
+  rownames(output_float_df) <- float_names
+
+  for(i in 1:num_o_floats){
+    for(j in 1:variables)
+      output_float_df[i,j] = sapply(x$Float_Characteristics[[j]][i], paste, collapse = ", ")
+  }
+
+  pander(output_int_df, caption = 'Integer numeric data characteristics')
+
+  pander(output_float_df, caption = 'Float numeric data characteristics')
 }
 
 #' @export
 plot.Numeric_EDA <- function(x){
+  x <- unclass(x)
+  integer_names <- names(x$Interger_Data)
+  num_o_ints <- length(integer_names)
+  float_names <- names(x$Double_Data)
+  num_o_floats <- length(float_names)
+  bin_count = range()
 
+  #float_data
+  violins <- ggplot(x$Double_Data %>% pivot_longer( everything()), aes(x=name, y=value)) +
+    geom_violin(trim=TRUE, fill='#A4A4A4', color="darkred")+
+    geom_boxplot(width=0.1) + theme_minimal()+
+    labs(title="Float Type",x="Variable", y = "Value (Each Independent)")+
+    facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right") + coord_flip()
+
+  hists <- ggplot(x$Interger_Data%>% pivot_longer( everything()), aes(x = value)) +
+    geom_histogram(fill = "#A4A4A4", colour = "darkred", bins = 15) +  geom_boxplot(width=0.1, position= position_nudge(y=-.2)) +
+    theme_minimal()+
+    labs(title="Integer Type",x="Value (Each Independent)", y = "Variable") +
+    facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
+
+  ggarrange(violins, hists, ncol = 2)
 }
+
+
+
 
 
