@@ -143,7 +143,9 @@ plot.Numeric_EDA <- function(x){
   num_o_ints <- length(integer_names)
   float_names <- names(x$Double_Data)
   num_o_floats <- length(float_names)
-  bin_count = range()
+
+
+
 
   #float_data
   violins <- ggplot(x$Double_Data %>% pivot_longer( everything()), aes(x=name, y=value)) +
@@ -158,7 +160,18 @@ plot.Numeric_EDA <- function(x){
     labs(title="Integer Type",x="Value (Each Independent)", y = "Variable") +
     facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
 
-  ggarrange(violins, hists, ncol = 2)
+  blank_hold <- ggplot() + theme_void()
+  if(num_o_floats > num_o_ints){
+    ggarrange(violins,
+              ggarrange(hists, blank_hold, ncol =1, heights = c(num_o_ints * 2, (num_o_floats-num_o_ints)*2)),
+              ncol = 2, heights =c(num_o_floats *2))
+  }
+  else{
+    ggarrange(hists,
+              ggarrange(violins, blank_hold, ncol =1, heights = c(num_o_floats * 2, (num_o_ints-num_o_floats)*2)),
+              ncol = 2, heights =c(num_o_floats *2))
+  }
+
 }
 
 
