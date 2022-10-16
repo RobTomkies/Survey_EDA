@@ -47,7 +47,7 @@ Data_Describe <- function(dataset,
 
   #Data type lists
   Ordinal_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Ordinal']
-  NLP_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'NLP']
+  NLP_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Natural Language']
   Integer_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Integer']
   Float_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Float']
   Nominal_type <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Nominal']

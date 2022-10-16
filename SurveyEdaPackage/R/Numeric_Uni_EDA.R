@@ -16,13 +16,17 @@ Numeric_Uni_EDA <- function(dataset,
                                                      preserve_nonconform = F)
 
 
+  drop_vector <- column_recog_vector('ignore.columns', input_list, dataset)
 
 
   #separate int data by selecting integer column and
   #select the names where data type is equal to integer etc
-  int_names <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Integer']
+  int_names_all <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Integer']
+  int_names <- int_names_all[!(column_recog_vector('ignore.columns',int_names_all, dataset) %in% drop_vector)]
   integer_data <- updated_data$data %>% dplyr::select(int_names)
-  double_names <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Float']
+
+  double_names_all <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Float']
+  double_names <- double_names_all[!(column_recog_vector('ignore.columns',double_names_all, dataset) %in% drop_vector)]
   double_data <- updated_data$data %>% dplyr::select(double_names)
   rm(updated_data)
 

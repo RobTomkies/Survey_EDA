@@ -68,14 +68,14 @@ data_type_detect <- function(dataset,
   original_type[original_typeb == "logical"] <- 'Nominal'
   original_type[original_typeb == "numeric"] <- 'Float'
   original_type[original_typeb == "integer"] <- 'Integer'
-  original_type[original_typeb == "character"] <- 'NLP'
+  original_type[original_typeb == "character"] <- 'Natural Language'
 
   #remove alternate NAs
   dataset <- Alternate_NA_Remove(alternate_nas, dataset)
 
   #determine forced columns
   if(length(NLP_force) >= 1){
-    NLP_force <- column_recog_vector('NLP', NLP_force, dataset)
+    NLP_force <- column_recog_vector('Natural Language', NLP_force, dataset)
   }
   if(length(nominal_force) >= 1){
     nominal_force <- column_recog_vector('nominal', nominal_force, dataset)
@@ -146,7 +146,7 @@ data_type_detect <- function(dataset,
   }
 
   if(length(columns_to_detect) >= 1){
-    #remainder columns set to NLP
+    #remainder columns set to Natural Language
     dataset <- NLP_Convert(columns_to_detect, dataset)
   }
 
@@ -162,7 +162,7 @@ data_type_detect <- function(dataset,
 
 
   converted_names<- original_names
-  converted_names[original_names %in% NLP_final] <- 'NLP'
+  converted_names[original_names %in% NLP_final] <- 'Natural Language'
   converted_names[original_names %in% Integer_final] <-'Integer'
   converted_names[original_names %in% Floating_final] <- 'Float'
   converted_names[original_names %in% Nominal_final] <-'Nominal'

@@ -8,7 +8,7 @@
 #'
 #' @examples
 NLP_Convert <- function(input_vector, dataset){
-  input_vector <- column_recog_vector('NLP', input_vector, dataset)
+  input_vector <- column_recog_vector('Natural Language', input_vector, dataset)
   for(i in 1:length(input_vector)){
     dataset[,input_vector[i]] <- as.character(dataset[,input_vector[i]])
   }
