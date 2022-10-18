@@ -77,9 +77,11 @@ data_type_detect <- function(dataset,
   if(length(NLP_force) >= 1){
     NLP_force <- column_recog_vector('Natural Language', NLP_force, dataset)
   }
+
   if(length(nominal_force) >= 1){
     nominal_force <- column_recog_vector('nominal', nominal_force, dataset)
   }
+
   if(length(numeric_force) >= 1){
     numeric_force <- column_recog_vector('numeric', numeric_force, dataset)
   }
@@ -89,6 +91,7 @@ data_type_detect <- function(dataset,
   }
   else{
     forced_columns <- c(NLP_force, nominal_force, numeric_force)
+
   }
   if(any(duplicated(forced_columns))){
     stop(paste('Column', forced_columns[duplicated(forced_columns)], 'has been forced to multiple data types, please reconsider'))
@@ -100,6 +103,7 @@ data_type_detect <- function(dataset,
   else{
     columns_to_detect <- (1:ncol(dataset))
   }
+
 
   #force columns
 #!TODO repeats the column recog function - look at streamlining
@@ -120,7 +124,7 @@ data_type_detect <- function(dataset,
 
   if(length(nominal_force) >= 1){
     dataset <- Nominal_Detect(nominal_force, dataset, preserve_nonconform = preserve_nonconform, force = T)
-  }
+    }
 
   if(length(NLP_force) >= 1){
     dataset <- NLP_Convert(NLP_force, dataset)
@@ -152,9 +156,10 @@ data_type_detect <- function(dataset,
 
 
   NLP_final <- names(dataset)[c(columns_to_detect, NLP_force)]
-  Integer_final <- names(dataset)[c(ints_forced, ints_detected)]
-  Floating_final <- names(dataset)[c(double_forced, double_detected)]
-  Nominal_final <- names(dataset)[c(cats_detected, nominal_force)]
+  Integer_final <- if(exists('ints_detected')){names(dataset)[c(ints_forced, ints_detected)]}else{names(dataset)[c(ints_forced)]}
+  Floating_final <- if(exists('double_detected')){names(dataset)[c(double_forced, double_detected)]}else{names(dataset)[c(double_forced)]}
+  Nominal_final <- if(exists('cats_detected')){names(dataset)[c(cats_detected, nominal_force)]}else{names(dataset)[nominal_force]}
+
   Ordinal_final <- c()
   if(length(ordinal_force)>= 1){
     Ordinal_final <- names(dataset)[c(ordinal_force)]
@@ -167,6 +172,7 @@ data_type_detect <- function(dataset,
   converted_names[original_names %in% Floating_final] <- 'Float'
   converted_names[original_names %in% Nominal_final] <-'Nominal'
   converted_names[original_names %in% Ordinal_final] <-'Ordinal'
+
 
   output <- list(data = dataset,
                  original_type = data.frame(data_field = original_names, data_type = original_type),

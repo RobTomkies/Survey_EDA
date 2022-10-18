@@ -16,7 +16,7 @@ Numeric_Uni_EDA <- function(dataset,
                                                      preserve_nonconform = F)
 
 
-  drop_vector <- column_recog_vector('ignore.columns', input_list, dataset)
+  drop_vector <- column_recog_vector('ignore.columns', ignore.columns, dataset)
 
 
   #separate int data by selecting integer column and
