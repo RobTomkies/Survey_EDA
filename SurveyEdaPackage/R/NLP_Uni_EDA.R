@@ -41,17 +41,28 @@ NLP_Uni_EDA <- function(dataset,
 }
 
 
-NLP_ngram <- function(dataset){
-
+convert_tidy <- function(column){
+  return(tibble(response = 1:length(column), text = column))
 }
 
-pacman::p_load(tidytext)
-free_text_column <- datain$reviews
-tidy_data <- tibble(response = 1:length(free_text_column), text = free_text_column)%>%
-  unnest_tokens(word, text) %>%
-  mutate(word = str_extract(word, "[a-z']+")) %>%
-  anti_join(stop_words, by = 'word')
 
 
-frequencies <- tidy_data %>%
-  count(word, sort = TRUE)
+NLP_ngram  <- function(dataset, n){
+  column_names <- rep(NA, n)
+  #loops prime to be shifted to rcpp
+  for(i in 1:n){
+    column_names[i] <- paste('word', i, sep = '')
+  }
+  dataset <- dataset %>%
+    unnest_tokens(bigram, text, token = "ngrams", n = n) %>%
+    separate(bigram, column_names, sep = " ") %>%
+    select(column_names)
+
+  dataset <- data.frame(lapply(dataset, function(x)return(x %>% str_extract("^[a-z0-9'._]*$"))))
+
+
+  dataset <- filter_all(dataset, all_vars(!(. %in% stop_words$word)))%>%
+    filter_all(all_vars(!is.na(.)))%>%
+    count(across(), sort = TRUE)
+  return(data.frame(dataset))
+}
