@@ -37,7 +37,7 @@ Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
 
         #set up name trigger to ensure no double naming
         name_trigger <- F
-        running_name <- paste(names(dataset)[column_indexes[i]], '_other_ordinal')
+        running_name <- paste(names(dataset)[column_indexes[i]], '_other')
         while(name_trigger == F){
           if(running_name %in% names(dataset)){
             running_name <- paste(running_name, '_.')

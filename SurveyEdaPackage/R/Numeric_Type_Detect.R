@@ -78,7 +78,7 @@ Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, 
 
         name_trigger <- F
         if(preserve_nonconform == T){
-          running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
+          running_name <- paste(names(dataset)[input_vector[i]], '_other')
           while(name_trigger == F){
             if(running_name %in% names(dataset)){
               running_name <- paste(running_name, '_.')

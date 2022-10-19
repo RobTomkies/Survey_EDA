@@ -53,7 +53,7 @@ Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force
         detect_record[i] <- T
         #set up name trigger to ensure no double naming
         name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
+        running_name <- paste(names(dataset)[input_vector[i]], '_other')
         while(name_trigger == F){
           if(running_name %in% names(dataset)){
             running_name <- paste(running_name, '_.')
@@ -87,7 +87,7 @@ Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force
         detect_record[i] <- T
         #set up name trigger to ensure no double naming
         name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
+        running_name <- paste(names(dataset)[input_vector[i]], '_other')
         while(name_trigger == F){
           if(running_name %in% names(dataset)){
             running_name <- paste(running_name, '_.')

@@ -3,7 +3,7 @@ Categorical_Uni_EDA <- function(dataset,
                             detect = T,
                             ordinal.force = list(),
                             nominal.force = c(),
-                            ignore.columns = c(), #this will need to have error catching built in for inputs - look and modularising the current ones?
+                            ignore.columns = c(),
                             alternate.nas = list()){
 
   outputs <- list(Nominal_Data = NULL, Ordinal_Data = NULL,
