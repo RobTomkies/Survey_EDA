@@ -10,14 +10,19 @@ NLP_Uni_EDA <- function(dataset,
   original_nrow <- nrow(dataset)
   original_ncol <- ncol(dataset)
 
+
+
   updated_data <- SurveyEdaPackage::data_type_detect(dataset,
                                                      NLP_force = NLP.force,
                                                      alternate_nas = alternate.nas,
                                                      preserve_nonconform = analyse_split_answers)
 
+
   drop_vector <- column_recog_vector('ignore.columns', ignore.columns, dataset)
+
   drop_vector_names <- names(dataset)[drop_vector]
   drop_vector_names <- c(drop_vector_names, paste(drop_vector_names, ' _other', sep = ''))
+
 
   if(analyse_split_answers == T){
     split_out_columns <- names(updated_data$data)[!(names(updated_data$data) %in% updated_data$converted_type$data_field)]
@@ -37,10 +42,12 @@ NLP_Uni_EDA <- function(dataset,
     NLP_data <- updated_data$data %>% dplyr::select(NLP_names)
   }else(stop('No NLP Data present to analyse'))
 
+  return(NLP_data)
+
 
 }
 
-
+#' @export
 NLP_Column_Analysis <- function(column_in, input_name){
   if(typeof(input_name)!= 'character'){stop('column name must be a string')}
   if(!is.vector(column_in)){stop('Input data must be a vector of strings, one row for each response')}
@@ -73,7 +80,7 @@ NLP_Column_Analysis <- function(column_in, input_name){
   return(output)
 }
 
-
+#' @export
 plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
   x <- unclass(x)
 
@@ -84,7 +91,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
   sentiment_summary <- ggplot(plot_frame, aes(x = factor(Emotions, levels = Emotions), y = Sentiment_Score , fill=Sentiment_Score)) +
     geom_bar(stat = "identity", color="black")+theme_minimal() +
     labs(title="Cumulate Sentiment Score",x="Emotion", y = "Cumulative Score")+ theme(legend.position="none")+
-    theme(axis.text.x = element_text(angle = 45, hjust=1)) +scale_fill_distiller(palette = "Greens")
+    theme(axis.text.x = element_text(angle = 45, hjust=1), axis.text = element_text(size = 18)) +scale_fill_distiller(palette = "Greens")
 
   input_data <- head(x$Word_Frequency, n=10)
   word_frequency <- ggplot(input_data, aes(x = n, y = factor(word1, levels = rev(word1)),fill=n)) +
@@ -92,7 +99,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     theme_minimal()+
     scale_fill_distiller(palette = "Greens")+
     labs(title="Word Frequency (top 10)",x="Count", y = "Word")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+    theme(axis.text.y = element_text(angle = 45, vjust=-1), axis.text = element_text(size = 18))
 
   input_data <- head(x$Bigrams, n=10) %>%
     mutate(Bigram = paste(word1, word2)) %>%
@@ -102,7 +109,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     theme_minimal()+
     scale_fill_distiller(palette = "Greens")+
     labs(title="Bigram Frequency (top 10)",x="Count", y = "Bigram")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+    theme(axis.text.y = element_text(angle = 45, vjust=-1), axis.text = element_text(size = 18))
 
   input_data <- head(x$Trigrams, n=10) %>%
     mutate(Trigram = paste(word1, word2, word3)) %>%
@@ -112,7 +119,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     theme_minimal()+
     scale_fill_distiller(palette = "Greens")+
     labs(title="Trigram Frequency (top 10)",x="Count", y = "Trigram")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+    theme(axis.text.y = element_text(angle = 45, vjust=-1), axis.text = element_text(size = 18))
 
   corrolation_plot <- x$Corr_matrix %>%
     filter(correlation > .2) %>%
@@ -122,22 +129,25 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     geom_node_point(color = "lightgreen", size = 5) +
     geom_node_text(aes(label = name), repel = TRUE) +
     theme_void()+
-    labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
+    labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none", axis.text = element_text(size = 18))
 
   ggarrange(ggarrange(sentiment_summary, word_frequency, ncol = 2),
             ggarrange(Bigram_frequency, Trigram_frequency, ncol =2),
-            nrow = 2)
-  ggarrange(corrolation_plot, nrow = 1)
+            ggarrange(corrolation_plot, ncol = 1),
+            heights = c(1,1,2),
+            nrow = 3)
+
 }
 
 
-
+#' @export
 convert_tidy <- function(column){
   return(tibble(response = 1:length(column), text = column))
 }
 
 
 
+#' @export
 NLP_ngram  <- function(column, n){
   column_names <- rep(NA, n)
   #loops prime to be shifted to rcpp
@@ -159,7 +169,7 @@ NLP_ngram  <- function(column, n){
   return(data.frame(dataset))
 }
 
-
+#' @export
 EDA_Word_cor_score <- function(column){
 
   dataset <- column %>%  unnest_tokens(word, text)%>%
@@ -178,7 +188,7 @@ EDA_Word_cor_score <- function(column){
 }
 
 
-
+#' @export
 tfidf_score <- function(column){
   dataset <- column %>%  unnest_tokens(word, text)%>%
     filter(!word %in% stop_words$word)
@@ -200,7 +210,7 @@ tfidf_score <- function(column){
 
   return(dataset)
 }
-
+#' @export
 reponse_word_count <- function(column){
   word_count <- sapply(gregexpr("[[:alpha:]]+", datain$reviews), function(x) sum(x > 0))
   return(word_count)
