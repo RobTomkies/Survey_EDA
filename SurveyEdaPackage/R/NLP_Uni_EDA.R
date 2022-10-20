@@ -43,6 +43,7 @@ NLP_Uni_EDA <- function(dataset,
 
 convert_tidy <- function(column){
   return(tibble(response = 1:length(column), text = column))
+
 }
 
 
@@ -66,3 +67,49 @@ NLP_ngram  <- function(dataset, n){
     count(across(), sort = TRUE)
   return(data.frame(dataset))
 }
+
+
+EDA_Word_cor_score <- function(dataset){
+
+  dataset <- dataset %>%  unnest_tokens(word, text)%>%
+    filter(!word %in% stop_words$word)
+
+  dataset$word <- dataset$word %>%
+    str_extract( "^[a-z0-9'._]*$")
+
+  word_corrs <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
+    group_by(word) %>%
+    filter(n() >= 25) %>%
+    pairwise_cor(word, response , sort = TRUE)
+  return(word_corrs)
+}
+
+
+tfidf_score <- function(dataset){
+  dataset <- dataset %>%  unnest_tokens(word, text)%>%
+    filter(!word %in% stop_words$word)
+
+  dataset$word <- dataset$word %>%
+    str_extract( "^[a-z0-9'._]*$")
+
+  dataset <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
+    count(response, word, sort = TRUE)
+
+  total_words <- dataset %>%
+    summarize(total = sum(n))
+
+  dataset <- dataset %>% mutate(total_words) %>%
+    bind_tf_idf(word, response , n) %>%
+    arrange(desc(tf_idf))
+
+  return(dataset)
+}
+
+reponse_word_count <- function(input){
+
+}
+
+
+#TODO! word_count
+#TODO! sentiment score
+#TODO! wrapper, plotting, summary

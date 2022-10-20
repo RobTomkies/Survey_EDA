@@ -21,7 +21,10 @@ Depends:
     pander (>= 0.6.5),
     ggplot2 (>= 3.3.6),
     dplyr (>= 1.0.9),
-    ggpubr (>=	0.4.0),
-    tidyr (>= 1.2.1)
+    ggpubr (>= 0.4.0),
+    tidyr (>= 1.2.1),
+    widyr (>= 0.1.5),
+    tidytext (>= 0.3.4),
+    stringr (>= 1.4.1)
 LazyData: true
 VignetteBuilder: knitr
