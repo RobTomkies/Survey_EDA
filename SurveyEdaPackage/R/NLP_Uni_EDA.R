@@ -41,20 +41,110 @@ NLP_Uni_EDA <- function(dataset,
 }
 
 
-convert_tidy <- function(column){
-  return(tibble(response = 1:length(column), text = column))
+NLP_Column_Analysis <- function(column_in, input_name){
+  if(typeof(input_name)!= 'character'){stop('column name must be a string')}
+  if(!is.vector(column_in)){stop('Input data must be a vector of strings, one row for each response')}
+  ## Tidy Format##
+  #convert to tidy format
+  working_data <- convert_tidy(column_in)
+  #word frequency
+  Word_Frequency <- NLP_ngram(working_data, 1)
+  #Bigrams
+  Bigrams <- NLP_ngram(working_data, 2)
+  #Trigrams
+  Trigrams <- NLP_ngram(working_data, 3)
+  #word corrolations
+  Corr_matrix <- EDA_Word_cor_score(working_data)
+  #tfidf
+  tf_idf <- tfidf_score(working_data)
+  ##Non Tidy Format##
+  #wordcount
+  wordcount <- reponse_word_count(column_in)
+  #Sentiment analysis
+  sentiments <- get_nrc_sentiment(column_in)
+  names(sentiments) <- paste(input_name,"_",names(sentiments), sep = "")
 
+  output <- list(Word_Frequency = Word_Frequency, Bigrams =Bigrams,
+                 Trigrams = Trigrams, Corr_matrix = Corr_matrix,
+                 Tf_idf = tf_idf, Wordcount = wordcount,
+                 Sentiments = sentiments)
+
+  class(output) <- 'NLP_Column_Analysis'
+  return(output)
+}
+
+
+plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
+  x <- unclass(x)
+
+  emotions <- c('anger', 'anticipation', 'disgust', 'fear', 'joy', 'sadness', 'surprise', 'trust', 'negative', 'positive')
+  sentiment_counts <- sapply(x$Sentiments, sum)
+  plot_frame <- data.frame(Emotions = emotions, Sentiment_Score = sentiment_counts)
+
+  sentiment_summary <- ggplot(plot_frame, aes(x = factor(Emotions, levels = Emotions), y = Sentiment_Score , fill=Sentiment_Score)) +
+    geom_bar(stat = "identity", color="black")+theme_minimal() +
+    labs(title="Cumulate Sentiment Score",x="Emotion", y = "Cumulative Score")+ theme(legend.position="none")+
+    theme(axis.text.x = element_text(angle = 45, hjust=1)) +scale_fill_distiller(palette = "Greens")
+
+  input_data <- head(x$Word_Frequency, n=10)
+  word_frequency <- ggplot(input_data, aes(x = n, y = factor(word1, levels = rev(word1)),fill=n)) +
+    geom_bar(stat = "identity", color="black")+
+    theme_minimal()+
+    scale_fill_distiller(palette = "Greens")+
+    labs(title="Word Frequency (top 10)",x="Count", y = "Word")+ theme(legend.position="none")+
+    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+
+  input_data <- head(x$Bigrams, n=10) %>%
+    mutate(Bigram = paste(word1, word2)) %>%
+    select(Bigram, n)
+  Bigram_frequency <- ggplot(input_data, aes(x = n, y = factor(Bigram, levels = rev(Bigram)),fill=n)) +
+    geom_bar(stat = "identity", color="black")+
+    theme_minimal()+
+    scale_fill_distiller(palette = "Greens")+
+    labs(title="Bigram Frequency (top 10)",x="Count", y = "Bigram")+ theme(legend.position="none")+
+    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+
+  input_data <- head(x$Trigrams, n=10) %>%
+    mutate(Trigram = paste(word1, word2, word3)) %>%
+    select(Trigram, n)
+  Trigram_frequency <- ggplot(input_data, aes(x = n, y = factor(Trigram, levels = rev(Trigram)),fill=n)) +
+    geom_bar(stat = "identity", color="black")+
+    theme_minimal()+
+    scale_fill_distiller(palette = "Greens")+
+    labs(title="Trigram Frequency (top 10)",x="Count", y = "Trigram")+ theme(legend.position="none")+
+    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+
+  corrolation_plot <- x$Corr_matrix %>%
+    filter(correlation > .2) %>%
+    graph_from_data_frame() %>%
+    ggraph(layout = "fr") +
+    geom_edge_link(show.legend = FALSE) +
+    geom_node_point(color = "lightgreen", size = 5) +
+    geom_node_text(aes(label = name), repel = TRUE) +
+    theme_void()+
+    labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
+
+  ggarrange(ggarrange(sentiment_summary, word_frequency, ncol = 2),
+            ggarrange(Bigram_frequency, Trigram_frequency, ncol =2),
+            nrow = 2)
+  ggarrange(corrolation_plot, nrow = 1)
 }
 
 
 
-NLP_ngram  <- function(dataset, n){
+convert_tidy <- function(column){
+  return(tibble(response = 1:length(column), text = column))
+}
+
+
+
+NLP_ngram  <- function(column, n){
   column_names <- rep(NA, n)
   #loops prime to be shifted to rcpp
   for(i in 1:n){
     column_names[i] <- paste('word', i, sep = '')
   }
-  dataset <- dataset %>%
+  dataset <- column %>%
     unnest_tokens(bigram, text, token = "ngrams", n = n) %>%
     separate(bigram, column_names, sep = " ") %>%
     select(column_names)
@@ -64,14 +154,15 @@ NLP_ngram  <- function(dataset, n){
 
   dataset <- filter_all(dataset, all_vars(!(. %in% stop_words$word)))%>%
     filter_all(all_vars(!is.na(.)))%>%
-    count(across(), sort = TRUE)
+    count(across(), sort = TRUE) %>%
+    head(n = 500)
   return(data.frame(dataset))
 }
 
 
-EDA_Word_cor_score <- function(dataset){
+EDA_Word_cor_score <- function(column){
 
-  dataset <- dataset %>%  unnest_tokens(word, text)%>%
+  dataset <- column %>%  unnest_tokens(word, text)%>%
     filter(!word %in% stop_words$word)
 
   dataset$word <- dataset$word %>%
@@ -80,13 +171,16 @@ EDA_Word_cor_score <- function(dataset){
   word_corrs <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
     group_by(word) %>%
     filter(n() >= 25) %>%
-    pairwise_cor(word, response , sort = TRUE)
+    pairwise_cor(word, response , sort = TRUE)%>%
+    head(n = 1000)
+
   return(word_corrs)
 }
 
 
-tfidf_score <- function(dataset){
-  dataset <- dataset %>%  unnest_tokens(word, text)%>%
+
+tfidf_score <- function(column){
+  dataset <- column %>%  unnest_tokens(word, text)%>%
     filter(!word %in% stop_words$word)
 
   dataset$word <- dataset$word %>%
@@ -100,16 +194,17 @@ tfidf_score <- function(dataset){
 
   dataset <- dataset %>% mutate(total_words) %>%
     bind_tf_idf(word, response , n) %>%
-    arrange(desc(tf_idf))
+    arrange(desc(tf_idf)) %>%
+    select(response, word, tf_idf) %>%
+    head(n = 500)
 
   return(dataset)
 }
 
-reponse_word_count <- function(input){
-
+reponse_word_count <- function(column){
+  word_count <- sapply(gregexpr("[[:alpha:]]+", datain$reviews), function(x) sum(x > 0))
+  return(word_count)
 }
 
-
-#TODO! word_count
-#TODO! sentiment score
 #TODO! wrapper, plotting, summary
+
