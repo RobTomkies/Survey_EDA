@@ -2,24 +2,45 @@
 #'
 #' This function receives a dataframe containing survey data with one column
 #' for each question and will output summary and characteristic values for the
-#' categorical data split in to ordinal and nominal data.
+#' categorical data. Analysis is split in to ordinal and nominal types. Columns
+#' can either be automatically detected or forced by the user for analysis.
 #'
 #'
-#' @param dataset
+#' @param dataset dataframe ; containing columns of each field and rows containing each record
+#' @param detect Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns
+#' @param ordinal.force list ; containing vectors for each column you wished forced and analysed as ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal data in order you wish them to be handled.
+#' @param nominal.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as nominal data type
+#' @param ignore.columns vector ; the names of the columns (as strings) or indexes of columns, or a combination, that should be ignored during analysis
+#' @param alternate.nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
 #'
-#' @param detect
-#' @param ordinal.force
-#' @param nominal.force
-#' @param ignore.columns
-#' @param alternate.nas
+#' @return A list containing:
+#' -  Nominal_Data : Adjusted nominal data that was analysed
+#' -  Ordinal_Data: Adjusted ordinal data that was analysed
+#' -  Ordinal_Statistics: List containing the most and least common categories along with their counts for ordinal data
+#' -  Nominal_Statistics: List containing the most and least common categories along with their counts for nominal data
+#' -  Nominal_Counts: List containing the counts for each category in the nominal data
+#' -  Ordinal_Counts: List containing the counts for each category in the ordinal data
+#'
+#' @examples
+#' Categorical_Uni_EDA(dataset = example_dataset,
+#'                     detect = T,
+#'                     ordinal_force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),
+#'                     nominal_force = c('col5','col7'),
+#'                     ignore.columns = c('col4'),
+#'                     alternate.nas = list(c('col1', 'error'))
+#'
+#' Categorical_Uni_EDA(example_dataset)
 #'
 #' @export
+#'
 Categorical_Uni_EDA <- function(dataset,
                             detect = T,
                             ordinal.force = list(),
                             nominal.force = c(),
                             ignore.columns = c(),
                             alternate.nas = list()){
+
+  if(detect == F & length(ordinal.force) == 0 & length(nominal.force) == 0){stop('No categorical columns being analysed - correct inputs "detect", "ordinal.force" or "nominal.force"')}
 
   outputs <- list(Nominal_Data = NULL, Ordinal_Data = NULL,
                   Ordinal_Statistics = NULL, Nominal_Statistics = NULL,
@@ -125,8 +146,6 @@ print.Categorical_EDA <- function(x){
 #' @export
 plot.Categorical_EDA <- function(x){
   x <- unclass(x)
-
-
 
   if(!is.null(x$Ordinal_Data[1])){
     ord_names <- names(x$Ordinal_Data)

@@ -22,7 +22,7 @@
 #'
 #' @param dataset dataframe ; containing columns of each field and rows containing each record
 #' @param NLP_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type
-#' @param ordinal_force list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the nominal in order you wish them to be handles.
+#' @param ordinal_force list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal in order you wish them to be handles.
 #' @param nominal_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type
 #' @param numeric_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to numeric data type.
 #' @param alternate_nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
