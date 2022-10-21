@@ -31,6 +31,10 @@
 #'
 #' Categorical_Uni_EDA(example_dataset)
 #'
+#' plot(Categorical_Uni_EDA(example_dataset))
+#'
+#' print(Categorical_Uni_EDA(example_dataset))
+#'
 #' @export
 #'
 Categorical_Uni_EDA <- function(dataset,
