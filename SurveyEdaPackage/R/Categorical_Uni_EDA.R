@@ -1,3 +1,18 @@
+#'Univariate Categorical Exploratory Data Analysis
+#'
+#' This function receives a dataframe containing survey data with one column
+#' for each question and will output summary and characteristic values for the
+#' categorical data split in to ordinal and nominal data.
+#'
+#'
+#' @param dataset
+#'
+#' @param detect
+#' @param ordinal.force
+#' @param nominal.force
+#' @param ignore.columns
+#' @param alternate.nas
+#'
 #' @export
 Categorical_Uni_EDA <- function(dataset,
                             detect = T,
