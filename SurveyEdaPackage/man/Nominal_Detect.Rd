@@ -47,3 +47,7 @@ Where data is comprised of 21 or more records:
 
 Of course if this is ineffective at detecting columns can be manually forced.
 }
+\examples{
+Nominal_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
+
+}

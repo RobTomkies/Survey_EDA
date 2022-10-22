@@ -1,5 +1,51 @@
 
+
+#' Univariate Numeric Exploratory Data Analysis
+#'
+#' This function receives a dataframe containing survey data with one column
+#' for each question and will output summary and characteristic values for the
+#' numeric data. Analysis is split in to integer and continuous types. Columns
+#' can either be automatically detected or forced by the user for analysis.
+#'
+#' @param dataset dataset dataframe ; containing columns of each field and rows containing each record
+#' @param detect Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns
+#' @param numeric.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as numeric data type
+#' @param ignore.columns vector ; the names of the columns (as strings) or indexes of columns, or a combination, that should be ignored during analysis
+#' @param alternate.nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
+#'
+#' @return
+#' List containing:
+#' 1. Integer_characteristics - A list containing:
+#'   - Means: vector; Mean of each integer field
+#'   - Medians: vector; Medians of each integer field
+#'   - Modes: list; list of a vector per field containing the modal integer values for each field
+#'   - Maxs: vector; max of each integer field
+#'   - Mins: vector; Minimum of each integer field
+#'   - I.Q.Rs: vector; Inter quartile range of each integer field
+#'   - S.Ds: vector; standard deviation of each integer field
+#'   - Skews: vector; pearson second coefficient of skewness value for each field
+#' 2. Float_Characteristics: list; A list containing the same analysis as above however for the continuous numeric data fields
+#' 3. Integer_Data: dataframe; containing the data for the integer fields analysed
+#' 4. Double_Data: dataframe; containing the data for the continuous numeric fields analysed
+#' 5. GT_20pcnt_Flag: list; A list containing a vector for each field analysed where the vector contains the names of each value that makes up over 20% of the values seen, a potential indicator of either an alternate NA value or what is actually categorical data
+#'
 #' @export
+#'
+#' @examples
+#' Numeric_Uni_EDA(dataset = example_dataset,
+#'                     detect = T,
+#'                     numeric.force = c('col5','col7'),
+#'                     ignore.columns = c('col4'),
+#'                     alternate.nas = list(c('col1', 'error'))
+#'
+#' Numeric_Uni_EDA(example_dataset)
+#'
+#' plot(Numeric_Uni_EDA(example_dataset))
+#'
+#' print(Numeric_Uni_EDA(example_dataset))
+#'
+#' summary(Numeric_Uni_EDA(example_dataset))
+#'
 Numeric_Uni_EDA <- function(dataset,
                             detect = T,
                             numeric.force = c(),
@@ -74,6 +120,19 @@ Numeric_Uni_EDA <- function(dataset,
 }
 
 
+#' Print function for Numeric_Uni_EDA S3 Object
+#'
+#'  s3 method to print summary tables showing which fields have been analysed as integer or float type data as well as any values flagged as being over 20% of the values present
+#'
+#'
+#' @param x Numeric_EDA s3 object
+#'
+#' @return Markdown format summary tables showing which fields have been analysed as integer or float type data as well as any values flagged as being over 20% of the values present
+#'
+#' @examples
+#' x <- Numeric_Uni_EDA(basic_test_data)
+#' print(x)
+#'
 #' @export
 print.Numeric_EDA <- function(x){
   x <- unclass(x)
@@ -108,6 +167,19 @@ print.Numeric_EDA <- function(x){
   pander(output_2, caption = "Values that make up 20% or more of data in each field")
 }
 
+#' Summary function for Numeric_Uni_EDA S3 Object
+#'
+#'  s3 method to show detailed summary tables showing the statistical characteristics of the data as calculated by the function
+#'
+#'
+#' @param x Numeric_EDA s3 object
+#'
+#' @return Markdown format summary tables showing detailed summary tables showing the statistical characteristics of the data
+#'
+#' @examples
+#' x <- Numeric_Uni_EDA(basic_test_data)
+#' summary(x)
+#'
 #' @export
 summary.Numeric_EDA <- function(x){
   x <- unclass(x)
@@ -140,6 +212,19 @@ summary.Numeric_EDA <- function(x){
   pander(output_float_df, caption = 'Float numeric data characteristics')
 }
 
+#' Plot function for Numeric_Uni_EDA S3 Object
+#'
+#'  s3 method to plot histograms and boxplots for integer data and violin and boxplots for conitnuous numeric type data
+#'
+#'
+#' @param x Numeric_EDA s3 object
+#'
+#' @return Histograms and boxplots for integer data and violin and boxplots for conitnuous numeric type data
+#'
+#' @examples
+#' x <- Numeric_Uni_EDA(basic_test_data)
+#' plot(x)
+#'
 #' @export
 plot.Numeric_EDA <- function(x){
   x <- unclass(x)
@@ -147,9 +232,6 @@ plot.Numeric_EDA <- function(x){
   num_o_ints <- length(integer_names)
   float_names <- names(x$Double_Data)
   num_o_floats <- length(float_names)
-
-
-
 
   #float_data
   violins <- ggplot(x$Double_Data %>% pivot_longer( everything()), aes(x=name, y=value)) +

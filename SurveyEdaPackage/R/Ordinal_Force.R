@@ -4,8 +4,7 @@
 #' @param dataset dataframe ; containing columns of each field and rows containing each record
 #' @param preserve_nonconform boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column
 #'
-#' @return
-#' @export
+#' @return dataset with Ordinal data forced
 #'
 #' @examples
 #' Ordinal_Force(list(c('x', 1, 2)), trial_data)
@@ -75,7 +74,3 @@ Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
 }
 
 
-# trial_data <- trial_dataframe
-# x <- list(c('ordinal_level_uno', 1,2,3), c('x', 1,2,3)) #, c('doubls', 2,5,6)
-# z <- Ordinal_Force(x, trial_data)
-# z$ordinal_level_uno

@@ -19,7 +19,7 @@ data_type_detect(
 
 \item{NLP_force}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type}
 
-\item{ordinal_force}{list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the nominal in order you wish them to be handles.}
+\item{ordinal_force}{list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal in order you wish them to be handles.}
 
 \item{nominal_force}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type}
 

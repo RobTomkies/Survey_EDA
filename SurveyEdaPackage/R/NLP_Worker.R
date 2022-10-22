@@ -1,16 +1,16 @@
-#' @export
+
 convert_tidy <- function(column){
   return(tibble(response = 1:length(column), text = column))
 }
 
 
-#' @export
+
 reponse_word_count <- function(column){
-  word_count <- sapply(gregexpr("[[:alpha:]]+", datain$reviews), function(x) sum(x > 0))
+  word_count <- sapply(gregexpr("[[:alpha:]]+", column), function(x) sum(x > 0))
   return(word_count)
 }
 
-#' @export
+
 tfidf_score <- function(column){
   dataset <- column %>%  unnest_tokens(word, text)%>%
     filter(!word %in% stop_words$word)
@@ -34,6 +34,7 @@ tfidf_score <- function(column){
 }
 
 
+
 #' @export
 EDA_Word_cor_score <- function(column){
 
@@ -45,14 +46,21 @@ EDA_Word_cor_score <- function(column){
 
   word_corrs <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
     group_by(word) %>%
-    filter(n() >= 25) %>%
-    pairwise_cor(word, response , sort = TRUE)%>%
-    head(n = 1000)
+    filter(n() >= 25)
+
+
+  if(length(word_corrs) <= 5){warning('fewer than 5 meaningful words in column, word corrolation analysis not possible')
+    word_corrs <- NA}
+  else{
+    word_corrs<- word_corrs %>% pairwise_cor(word, response , sort = TRUE)%>%
+      head(n = 1000)
+  }
+
 
   return(word_corrs)
 }
 
-#' @export
+
 NLP_ngram  <- function(column, n){
   column_names <- rep(NA, n)
   #loops prime to be shifted to rcpp

@@ -33,9 +33,12 @@
 #' @param force boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them
 #'
 #' @return dataframe containing the adjusted dataset
+#'
 #' @export
 #'
 #' @examples
+#' Nominal_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
+#'
 Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   input_vector <- column_recog_vector('nominal', input_vector, dataset)
   #initiate dataframe to hold any split out values if needed

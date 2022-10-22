@@ -120,6 +120,19 @@ Categorical_Uni_EDA <- function(dataset,
 }
 
 
+#' Print function for Categorical_EDA S3 Object
+#'
+#'  s3 method to print summary tables for each of nominal and ordinal data displaying the most and least common categories and their respective counts
+#'
+#'
+#' @param x Categorical_EDA s3 object
+#'
+#' @return Markdown format summary tables for each of nominal and ordinal data displaying the most and least common categories and their respective counts
+#'
+#' @examples
+#' x <- Categorical_Uni_EDA(basic_test_data)
+#' print(x)
+#'
 #' @export
 print.Categorical_EDA <- function(x){
   x <- unclass(x)
@@ -147,6 +160,19 @@ print.Categorical_EDA <- function(x){
   }
 }
 
+#' Plot function for Categorical_EDA S3 Object
+#'
+#'  s3 method to plot proportional barplots of categorical data. Categories that make up less than 5% of the data are grouped together
+#'
+#'
+#' @param x Categorical_EDA s3 object
+#'
+#' @return Proportional bar plots of each category with caetgories containing less than 5% of data grouped as other.
+#'
+#' @examples
+#' x <- Categorical_Uni_EDA(basic_test_data)
+#' plot(x)
+#'
 #' @export
 plot.Categorical_EDA <- function(x){
   x <- unclass(x)

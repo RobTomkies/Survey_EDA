@@ -11,6 +11,9 @@ NLP_Convert(input_vector, dataset)
 
 \item{input_vectorvector}{; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type}
 }
+\value{
+dataset with coverted columns
+}
 \description{
 Natural Language Type Forcing
 }

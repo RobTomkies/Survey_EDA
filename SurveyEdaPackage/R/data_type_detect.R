@@ -184,6 +184,12 @@ data_type_detect <- function(dataset,
 
 
 
+#' Print function for data_detected s3 object
+#'
+#' Prints the top 10 rows of the output data following running the data_type_detect() function
+#'
+#' @param x data_detected s3 object
+#'
 #' @export
 print.data_detected <- function(x){
   x <- unclass(x)
@@ -192,6 +198,12 @@ print.data_detected <- function(x){
 }
 
 
+#' Summary function for data_detected s3 object
+#'
+#' Prints markdown friendly table of the input data format detected as well as the output format of data following running the data_type_detect() function
+#'
+#' @param x data_detected s3 object
+#'
 #' @export
 summary.data_detected <- function(x){
   x <- unclass(x)

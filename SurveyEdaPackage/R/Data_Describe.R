@@ -1,5 +1,45 @@
 
+
+#' Data Describe
+#'
+#' @param dataset dataframe ; containing columns of each field and rows containing each record
+#' @param NLP.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as natural language (NLP) data type
+#' @param ordinal.force list ; containing vectors for each column you wished forced and analysed as ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal data in order you wish them to be handled.
+#' @param nominal.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as nominal data type
+#' @param numeric.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as numeric data type
+#' @param alternate.nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
+#' @param preserve.nonconform boolean; Default T - true of false as to whether to analyse potentially natuaral language answers within other data type columns and to split these answers in to a separate column
+#' @param remove.repeat boolean;  Default T - true or false as to whether to remove repeat rows within the dataset
+#'
+#' @return
+#' A list containing summary statistics about the dataset as a whole. These include
+#' -  dimensions: dataframe; dimensions for the original input dataset as well as the adjusted output dataset
+#' -  memory_size: numeric; the memory size in bites that the dataset takes up
+#' -  data_type_conversion: dataframe; Contains each datafield, the original input data type as well as the detected/output datatype
+#' -  data_type_names: dataframe; a dataframe containing a column per datatype and the columns containing names of the fields of that datatype
+#' -  missingness_percentage: vector; A vector containing the percetage of missing data foudn in each data field
+#' -  grouped_missingness: dataframe; Dataframe containing columns of the names of each data field with columns split in to complete, 0-10%, 10-25%, 25-50%, 50-75% and >75% missing data
+#' -  repeat_rows: numeric; the number of repeat rows found in the dataset
+#' -  data: dataframe; the output adjusted data.
 #' @export
+#'
+#' @examples
+#' Data_Describe(dataset = example_dataset,
+#'                     NLP.force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),
+#'                     ordinal_force = list(c('col3', 'a','b','c'), c('col4', 2,3,4)),
+#'                     nominal_force = c('col5','col6'),
+#'                     numeric.force = c('col7','col8'),
+#'                     preserve.nonconform = T,
+#'                     alternate.nas = list(c('col1', 'error')),
+#'                     remove.repeat = T)
+#'
+#' Data_Describe(example_dataset)
+#'
+#'
+#' plot(Data_Describe(example_dataset))
+#'
+#' print(Data_Describe(example_dataset))
+#'
 Data_Describe <- function(dataset,
                           NLP.force = c(),
                           ordinal.force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
@@ -91,6 +131,12 @@ Data_Describe <- function(dataset,
   return(output)
 }
 
+#' Print method for data_describe s3 class
+#'
+#' Prints dimensions, general statistics and missingness groups for data on markdown format
+#'
+#' @param x data_describe s3 object
+#'
 #' @export
 print.data_describe <- function(x){
   x <- unclass(x)
@@ -107,6 +153,12 @@ print.data_describe <- function(x){
   pander(output_dt_mis, caption = "Data fields by Missingness (%)", split.cells = 12)
 }
 
+#' Plot method for data_describe s3 class
+#'
+#' Plots pie charts for missingness and data types present in data as well as a missingness plot showing the distribution of missing data throughout the dataset
+#'
+#' @param x data_describe s3 object
+#'
 #' @export
 plot.data_describe <- function(x){
   x <- unclass(x)
@@ -168,10 +220,3 @@ plot.data_describe <- function(x){
   ggarrange(ggarrange(p_missing, p_dtype, ncol = 2), missing_graphic, nrow = 2)
 
 }
-
-
-# plotting structure:
-# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
-
-# missingness:
-# https://jenslaufer.com/data/analysis/visualize_missing_values_with_ggplot.html

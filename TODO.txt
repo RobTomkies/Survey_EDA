@@ -1,3 +1,5 @@
 - get the detect optional input to work
 - sence check the cetegorical uni eda logic on when tables_ordinal is determined and if it works if no ordinals are used.
 - (stretch) wrapper function for all.
+- plot(Data_Describe(basic_test_data)) - warning attributes not identical across measure variables they will be dropped - check 
+- Data_Describe - check whether remove repeat is working

@@ -1,5 +1,31 @@
 
+
+#' Analysis of a Single Natural Language Vector
+#'
+#' @param column_in vector; A vector of character entries, each entry should be of natural language format data
+#' @param input_name character; The name of the field being analysed
+#'
+#' @return
+#' A list containing the following analysis:
+#' -  Word_Frequency: dataframe; containing the top 500 most common words and their count
+#' -  Bigrams: dataframe; containing the top 500 most common bigrams (word pairings) from the data and their frequency (order specific)
+#' -  Trigrams: dataframe; containing the top 500 most commonly mentioned trigrams (three words mentioned consecutively) and their counts (order specific)
+#' -  Corr_matrix: dataframe; containing the pearson frequency corrolation for words mentioned in the same response (order non specific)
+#' -  Tf_idf: tibble; containing the word, which response and tf_idf score for the analysis. This analysis works better on longer response answers
+#' -  wordcount: dataframe; contains the word count for each response
+#' -  Sentiments: dataframe; dataframe containing scores for anger, anticipation, disgust, fear, joy, sadness, surprise, trust, negative and positive for each response. This is determined using the NRC sentiment dictionary.
+#' -  intput_name: character; The name of the data field that the analysis refers to.
+#'
+#'
 #' @export
+#'
+#' @examples
+#'
+#' NLP_Column_Analysis('Column1', 'Question_2')
+#'
+#' plot(NLP_Column_Analysis(c(1), 'Question_2'))
+#' print(NLP_Column_Analysis(c(1), 'Question_2'))
+#'
 NLP_Column_Analysis <- function(column_in, input_name){
   if(typeof(input_name)!= 'character'){stop('column name must be a string')}
   if(!is.vector(column_in)){stop('Input data must be a vector of strings, one row for each response')}
@@ -30,6 +56,20 @@ NLP_Column_Analysis <- function(column_in, input_name){
   return(output)
 }
 
+#' Plot function for NLP_Column_Analysis S3 Object
+#'
+#'  s3 method to plot Barplots for sentiment scores, word frequency, bigrams and Trigrams as well as a graph map displaying clusters of corrolated words
+#'
+#'
+#' @param x NLP_Column_Analysis s3 object
+#' @param cor_cut The corrolation score to cut off for connections when plotting - default set to 0.2
+#'
+#' @return Barplots for sentiment scores, word frequency, bigrams and Trigrams as well as a graph map displaying clusters of corrolated words
+#'
+#' @examples
+#' x <- NLP_Column_Analysis(basic_test_data$words)
+#' plot(x)
+#'
 #' @export
 plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
   x <- unclass(x)
@@ -71,15 +111,22 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     labs(title="Trigram Frequency (top 10)",x="Count", y = "Trigram")+ theme(legend.position="none")+
     theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
-  corrolation_plot <- x$Corr_matrix %>%
-    filter(correlation > .2) %>%
-    graph_from_data_frame() %>%
-    ggraph(layout = "fr") +
-    geom_edge_link(show.legend = FALSE) +
-    geom_node_point(color = "lightgreen", size = 5) +
-    geom_node_text(aes(label = name), repel = TRUE) +
-    theme_void()+
-    labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
+
+  if(is.na(x$Corr_matrix)){
+    corrolation_plot <- ggplot() + theme_void()
+  }
+  else{
+    corrolation_plot <- x$Corr_matrix %>%
+      filter(correlation > .2) %>%
+      graph_from_data_frame() %>%
+      ggraph(layout = "fr") +
+      geom_edge_link(show.legend = FALSE) +
+      geom_node_point(color = "lightgreen", size = 5) +
+      geom_node_text(aes(label = name), repel = TRUE) +
+      theme_void()+
+      labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
+  }
+
 
   graphics <- ggarrange(ggarrange(sentiment_summary, word_frequency, ncol = 2),
                         ggarrange(Bigram_frequency, Trigram_frequency, ncol =2),
