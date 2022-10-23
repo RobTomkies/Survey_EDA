@@ -48,8 +48,7 @@ EDA_Word_cor_score <- function(column){
     group_by(word) %>%
     filter(n() >= 25)
 
-
-  if(length(word_corrs) <= 5){warning('fewer than 5 meaningful words in column, word corrolation analysis not possible')
+  if(length(word_corrs$word) <= 5){warning('fewer than 5 meaningful words in column, word corrolation analysis not possible')
     word_corrs <- NA}
   else{
     word_corrs<- word_corrs %>% pairwise_cor(word, response , sort = TRUE)%>%

@@ -112,7 +112,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
 
-  if(is.na(x$Corr_matrix)){
+  if(suppressWarnings(is.na(x$Corr_matrix))){
     corrolation_plot <- ggplot() + theme_void()
   }
   else{
