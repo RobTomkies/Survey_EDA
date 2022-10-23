@@ -23,7 +23,6 @@
 #'
 #' @examples
 #' Categorical_Uni_EDA(dataset = example_dataset,
-#'                     detect = T,
 #'                     ordinal_force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),
 #'                     nominal_force = c('col5','col7'),
 #'                     ignore.columns = c('col4'),
@@ -38,13 +37,14 @@
 #' @export
 #'
 Categorical_Uni_EDA <- function(dataset,
-                            detect = T,
                             ordinal.force = list(),
                             nominal.force = c(),
                             ignore.columns = c(),
+                            detect = T,
                             alternate.nas = list()){
 
   if(detect == F & length(ordinal.force) == 0 & length(nominal.force) == 0){stop('No categorical columns being analysed - correct inputs "detect", "ordinal.force" or "nominal.force"')}
+  if(!(is.logical(detect))){stop('Inputs for "detect" must be logical True or False, please correct')}
 
   outputs <- list(Nominal_Data = NULL, Ordinal_Data = NULL,
                   Ordinal_Statistics = NULL, Nominal_Statistics = NULL,
@@ -162,35 +162,30 @@ print.Categorical_EDA <- function(x){
 
 #' Plot function for Categorical_EDA S3 Object
 #'
-#'  s3 method to plot proportional barplots of categorical data. Categories that make up less than 5% of the data are grouped together
+#'  s3 method to plot proportional barplots of categorical data. Categories that make up less than 2% of the data are grouped together
 #'
 #'
 #' @param x Categorical_EDA s3 object
 #'
-#' @return Proportional bar plots of each category with caetgories containing less than 5% of data grouped as other.
+#' @return Proportional bar plots of each category with caetgories containing less than 2% of data grouped as other.
 #'
 #' @examples
 #' x <- Categorical_Uni_EDA(basic_test_data)
 #' plot(x)
 #'
 #' @export
+x <- y
 plot.Categorical_EDA <- function(x){
   x <- unclass(x)
 
   if(!is.null(x$Ordinal_Data[1])){
-    ord_names <- names(x$Ordinal_Data)
-    num_o_ords <- length(ord_names)
-    ggplot(x$Ordinal_Data %>% pivot_longer(everything())) +
-      aes(x = name, fill = factor(value)) +
-      geom_bar(position = "fill")+
-      facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
 
     ord_names <- names(x$Ordinal_Data)
     num_o_ords <- length(ord_names)
     data <- x$Ordinal_Data %>% pivot_longer(everything()) %>% group_by(value, name)%>%
       summarise(total_count=n(),.groups = 'drop') %>%
       mutate(prop = total_count / sum(total_count)) %>%
-      filter(prop >= 0.05)%>%
+      filter(prop >= 0.02)%>%
       as.data.frame()
     data$value <- as.character(data$value)
 
@@ -198,7 +193,7 @@ plot.Categorical_EDA <- function(x){
     for(i in 1:length(unique(data$name))){
       working <- data %>% filter(name == unique(data$name)[i])
       other_prop <- 1 - sum(working$prop)
-      data <- data %>% add_row(value = 'other <5%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
+      data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
         arrange(desc(prop))
     }
     #change to rcpp
@@ -212,13 +207,13 @@ plot.Categorical_EDA <- function(x){
       new_dataframe[(row_count+1):(row_count + temp_row),] <- working
       row_count <- row_count + temp_row
     }
-    ggplot(new_dataframe) +
+    print(ggplot(new_dataframe) +
       aes(x = name, y = prop, fill = value, group=prop) +
       ggtitle("Ordinal Data")+
       geom_col()+
       geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
       facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
-      theme(legend.position="none")
+      theme(legend.position="none"))
   }
 
   if(!is.null(x$Nominal_Data[1])){
@@ -227,7 +222,7 @@ plot.Categorical_EDA <- function(x){
     data <- x$Nominal_Data %>% pivot_longer(everything()) %>% group_by(value, name)%>%
       summarise(total_count=n(),.groups = 'drop') %>%
       mutate(prop = total_count / sum(total_count)) %>%
-      filter(prop >= 0.05)%>%
+      filter(prop >= 0.02)%>%
       as.data.frame()
     data$value <- as.character(data$value)
 
@@ -235,7 +230,7 @@ plot.Categorical_EDA <- function(x){
     for(i in 1:length(unique(data$name))){
       working <- data %>% filter(name == unique(data$name)[i])
       other_prop <- 1 - sum(working$prop)
-      data <- data %>% add_row(value = 'other <5%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
+      data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
         arrange(desc(prop))
     }
     #change to rcpp
@@ -249,12 +244,12 @@ plot.Categorical_EDA <- function(x){
       new_dataframe[(row_count+1):(row_count + temp_row),] <- working
       row_count <- row_count + temp_row
     }
-    ggplot(new_dataframe) +
+    print(ggplot(new_dataframe) +
       aes(x = name, y = prop, fill = value, group=prop) +
       ggtitle("Nominal Data")+
       geom_col()+
       geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
       facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
-      theme(legend.position="none")
+      theme(legend.position="none"))
   }
 }

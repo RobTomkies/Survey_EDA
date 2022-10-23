@@ -11,6 +11,7 @@
 #'
 Ordinal_Force <- function(input_list, dataset, preserve_nonconform = T){
   #column name recognition
+
   adjusted_input_list <- column_recog_list('ordinal', input_list, dataset)
   column_indexes <- adjusted_input_list[[1]]
   ordinal_levels <- adjusted_input_list[[2]]

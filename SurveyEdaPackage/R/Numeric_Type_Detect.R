@@ -13,7 +13,7 @@
 #'
 #'
 #' @details
-#' Categorical data detection where unforced is split in to two stages.
+#' Numeric data detection where unforced is split in to two stages.
 #'
 #' - Firstly whether the data is numeric or not by seeing if over 60% is numeric information.
 #' - If this is so and the data is less than 20 records long, if over 90% of the data is integer based then overall we classify as integer
@@ -30,7 +30,6 @@
 #'
 #' @return dataframe containing the adjusted dataset
 #'
-#' @export
 #' @examples
 #' Numeric_Type_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
 #'

@@ -9,9 +9,27 @@
 #' that will be added to the dataset.
 #'
 #'@details
-#' For further detail on tests for detection and forcing for data types see:
-#'  - Nominal : Nominal_Detect() function documentation
-#'  - Numeric : Numeric_Type_Detect() function documentation
+#' Categorical data detection where unforced is split in to two approaches:
+#'
+#' Where data is comprised of 20 or fewer records:
+#' - a value in the data is considered potentially nominal if over 10% of values are that value
+#' - if over 80% of records are made up of potentially categorical values we consider the field as nominal
+#'
+#' Where data is comprised of 21 or more records:
+#' - a value in the data is considered potentially nominal if over 5% of values are that value
+#' - if over 90% of records are made up of potentially categorical values we consider the field as nominal
+#'
+#' Of course if this is ineffective at detecting columns can be manually forced.
+#'
+#' Numeric data detection where unforced is split in to two stages:
+#'
+#' - Firstly whether the data is numeric or not by seeing if over 60% is numeric information.
+#' - If this is so and the data is less than 20 records long, if over 90% of the data is integer based then overall we classify as integer
+#' - If numeric and over 20 records long, if over 95% is integer then we classify as interger
+#' - If either of the last two steps fail but still over 60% numeric information we classify as floating point numeric data
+
+#'
+#' Of course if this is ineffective at detecting columns can be manually forced.
 #'
 #' As ordinal data is almost impossible to automatically detect, this format is only implemented
 #' when specified. Otherwise categorical data is detected and assumed as nominal.
@@ -48,13 +66,14 @@
 
 data_type_detect <- function(dataset,
                              NLP_force = c(),
-                             ordinal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
+                             ordinal_force = list(),
                              nominal_force = c(),
                              numeric_force = c(),
-                             alternate_nas = list(), #list(c(“colname1”, 0, 99),c(“colname2”, “hold”))
+                             alternate_nas = list(),
                              preserve_nonconform = T){
   #check input format
   if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
+  if(!( is.logical(preserve_nonconform))){stop('Inputs for "preserve_nonconform"  must be logical True or False, please correct')}
 
 
 
@@ -86,8 +105,13 @@ data_type_detect <- function(dataset,
     numeric_force <- column_recog_vector('numeric', numeric_force, dataset)
   }
   if(length(ordinal_force) >= 1){
-    ordinal_force <- column_recog_list('ordinal', ordinal_force, dataset)
-    forced_columns <- c(NLP_force, nominal_force, numeric_force, ordinal_force[[1]])
+    ordinal_forceb <- column_recog_list('ordinal', ordinal_force, dataset)
+    ordinal_force <- list()
+    length(ordinal_force)<- length(ordinal_forceb[[1]])
+    for(i in 1:length(ordinal_forceb[[1]])){
+      ordinal_force[[i]] <- c(ordinal_forceb[[1]][i],ordinal_forceb[[2]][[i]] )
+    }
+    forced_columns <- c(NLP_force, nominal_force, numeric_force, ordinal_forceb[[1]])
   }
   else{
     forced_columns <- c(NLP_force, nominal_force, numeric_force)
@@ -162,7 +186,7 @@ data_type_detect <- function(dataset,
 
   Ordinal_final <- c()
   if(length(ordinal_force)>= 1){
-    Ordinal_final <- names(dataset)[c(ordinal_force)]
+    Ordinal_final <- names(dataset)[ordinal_forceb[[1]]]
   }
 
 
@@ -180,9 +204,6 @@ data_type_detect <- function(dataset,
   class(output) <- c("data_detected", class(output))
   return(output)
 }
-
-
-
 
 #' Print function for data_detected s3 object
 #'

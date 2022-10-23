@@ -33,7 +33,6 @@
 #'
 #' @examples
 #' Numeric_Uni_EDA(dataset = example_dataset,
-#'                     detect = T,
 #'                     numeric.force = c('col5','col7'),
 #'                     ignore.columns = c('col4'),
 #'                     alternate.nas = list(c('col1', 'error'))
@@ -47,10 +46,11 @@
 #' summary(Numeric_Uni_EDA(example_dataset))
 #'
 Numeric_Uni_EDA <- function(dataset,
-                            detect = T,
                             numeric.force = c(),
                             ignore.columns = c(), #this will need to have error catching built in for inputs - look and modularising the current ones?
                             alternate.nas = list()){
+
+
   #dataset dimensions
   original_nrow <- nrow(dataset)
   original_ncol <- ncol(dataset)
@@ -75,6 +75,8 @@ Numeric_Uni_EDA <- function(dataset,
   double_names <- double_names_all[!(column_recog_vector('ignore.columns',double_names_all, dataset) %in% drop_vector)]
   double_data <- updated_data$data %>% dplyr::select(double_names)
   rm(updated_data)
+
+  if(ncol(integer_data) == 0 | ncol(double_data) == 0 ){stop('No numeric data either detected or forced, please correct')}
 
   #integer values
   #if hunting for rcpp these can all be converted

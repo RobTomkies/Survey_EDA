@@ -34,7 +34,6 @@
 #'
 #' @return dataframe containing the adjusted dataset
 #'
-#' @export
 #'
 #' @examples
 #' Nominal_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
