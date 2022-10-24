@@ -80,31 +80,32 @@ Numeric_Uni_EDA <- function(dataset,
 
   #integer values
   #if hunting for rcpp these can all be converted
-  int_means <- sapply(integer_data, mean, na.rm = T)
-  int_medians <- sapply(integer_data, median, na.rm = T)
+  int_means <- RCPPColMean(as.matrix(integer_data))
+  int_medians <-RCPPColMedian(as.matrix(integer_data))
   int_modes <- lapply(integer_data, function(x)return(as.numeric(names(table(x))[table(x) == max(table(x))])))
-  int_max <- sapply(integer_data, max, na.rm = T)
-  int_min <- sapply(integer_data, min, na.rm = T)
+  int_max <-RCPPColMax(as.matrix(integer_data))
+  int_min <-RCPPColMin(as.matrix(integer_data))
   int_IQR <- sapply(integer_data, IQR, na.rm = T)
-  int_SD <- sapply(integer_data, sd, na.rm = T)
+  int_SD <-RCPPColSD(as.matrix(integer_data))
+
   #pearson second coefficient of skewness
-  int_skew <- unlist(lapply(integer_data, function(x)return((3*(mean(x, na.rm = T) - median(x, na.rm = T)))/sd(x, na.rm = T))))
+  int_skew <-RCPPColSkew(as.matrix(integer_data))
+
+
 
   int_output_char <- list(Means = int_means, Medians = int_medians, Modes = int_modes,
                           Maxs = int_max, Mins = int_min, I.Q.Rs = int_IQR, S.Ds = int_SD,
                           Skews = int_skew)
 
-  #float values
-  #if hunting for rcpp these can all be converted
-  float_means <- sapply(double_data, mean, na.rm = T)
-  float_medians <- sapply(double_data, median, na.rm = T)
+  float_means <- RCPPColMean(as.matrix(double_data))
+  float_medians <-RCPPColMedian(as.matrix(double_data))
   float_modes <- lapply(double_data, function(x)return(as.numeric(names(table(x))[table(x) == max(table(x))])))
-  float_max <- sapply(double_data, max, na.rm = T)
-  float_min <- sapply(double_data, min, na.rm = T)
+  float_max <-RCPPColMax(as.matrix(double_data))
+  float_min <-RCPPColMin(as.matrix(double_data))
   float_IQR <- sapply(double_data, IQR, na.rm = T)
-  float_SD <- sapply(double_data, sd, na.rm = T)
+  float_SD <-RCPPColSD(as.matrix(double_data))
   #pearson second coefficient of skewness
-  float_skew <- unlist(lapply(double_data, function(x)return((3*(mean(x, na.rm = T) - median(x, na.rm = T)))/sd(x, na.rm = T))))
+  float_skew <-RCPPColSkew(as.matrix(double_data))
 
   float_output_char <- list(Means = float_means, Medians = float_medians, Modes = float_modes,
                           Maxs = float_max, Mins = float_min, I.Q.Rs = float_IQR, S.Ds = float_SD,

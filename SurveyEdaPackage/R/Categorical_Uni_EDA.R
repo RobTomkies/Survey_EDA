@@ -83,7 +83,7 @@ Categorical_Uni_EDA <- function(dataset,
 
   if(length(Ord_names) > 0){
     Ord_data <- updated_data$data %>% dplyr::select(all_of(Ord_names))
-    #probably can be shifted to rcpp
+
     ordinal_stats <- lapply(Ord_data, function(x){
       counts <- sort(table(x),decreasing=TRUE)
       max_value <- counts[1]
@@ -93,6 +93,8 @@ Categorical_Uni_EDA <- function(dataset,
       return(list(Max_Count = unname(max_value), Max_Categories = max_names,
                   Min_Count = unname(min_value), Min_Categories = min_names))
     })
+
+
     tables_ordinal <- sapply(Ord_data, table)
 
     outputs$Ordinal_Data <- Ord_data
@@ -141,7 +143,6 @@ Categorical_Uni_EDA <- function(dataset,
 print.Categorical_EDA <- function(x){
   x <- unclass(x)
   if(!is.null(x$Nominal_Statistics[1])){
-    #good spot to shift to rcpp
     nom_data <- x$Nominal_Statistics
     nom_output <- data.frame(matrix(nrow= length(nom_data), ncol = 5))
     names(nom_output) <- c('Data Field', 'Most Common Count', 'Most Common Groups', 'Least Common Count', 'Least Common Groups')
@@ -199,7 +200,6 @@ plot.Categorical_EDA <- function(x){
       data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
         arrange(desc(prop))
     }
-    #change to rcpp
     new_dataframe <- data.frame(matrix(nrow = nrow(data), ncol =ncol(data)+1 ))
     names(new_dataframe) <- c(names(data), 'label')
     row_count <- 0
@@ -236,7 +236,6 @@ plot.Categorical_EDA <- function(x){
       data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
         arrange(desc(prop))
     }
-    #change to rcpp
     new_dataframe <- data.frame(matrix(nrow = nrow(data), ncol =ncol(data)+1 ))
     names(new_dataframe) <- c(names(data), 'label')
     row_count <- 0

@@ -31,7 +31,7 @@ that will be added to the dataset.
 \details{
 It is recommended that if not forcing but auto detection that function data_type_detect() is used instead.
 
-Categorical data detection where unforced is split in to two stages.
+Numeric data detection where unforced is split in to two stages.
 \itemize{
 \item Firstly whether the data is numeric or not by seeing if over 60\% is numeric information.
 \item If this is so and the data is less than 20 records long, if over 90\% of the data is integer based then overall we classify as integer

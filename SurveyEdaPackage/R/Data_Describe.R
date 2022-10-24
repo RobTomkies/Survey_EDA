@@ -227,3 +227,6 @@ plot.data_describe <- function(x){
   ggarrange(ggarrange(p_missing, p_dtype, ncol = 2), missing_graphic, nrow = 2)
 
 }
+
+
+

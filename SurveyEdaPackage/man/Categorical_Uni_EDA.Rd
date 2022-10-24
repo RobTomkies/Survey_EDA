@@ -6,23 +6,23 @@
 \usage{
 Categorical_Uni_EDA(
   dataset,
-  detect = T,
   ordinal.force = list(),
   nominal.force = c(),
   ignore.columns = c(),
+  detect = T,
   alternate.nas = list()
 )
 }
 \arguments{
 \item{dataset}{dataframe ; containing columns of each field and rows containing each record}
 
-\item{detect}{Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns}
-
 \item{ordinal.force}{list ; containing vectors for each column you wished forced and analysed as ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal data in order you wish them to be handled.}
 
 \item{nominal.force}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as nominal data type}
 
 \item{ignore.columns}{vector ; the names of the columns (as strings) or indexes of columns, or a combination, that should be ignored during analysis}
+
+\item{detect}{Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns}
 
 \item{alternate.nas}{list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.}
 }
@@ -45,7 +45,6 @@ can either be automatically detected or forced by the user for analysis.
 }
 \examples{
 Categorical_Uni_EDA(dataset = example_dataset,
-                    detect = T,
                     ordinal_force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),
                     nominal_force = c('col5','col7'),
                     ignore.columns = c('col4'),

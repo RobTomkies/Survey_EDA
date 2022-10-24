@@ -10,10 +10,10 @@
 \item{x}{Categorical_EDA s3 object}
 }
 \value{
-Proportional bar plots of each category with caetgories containing less than 5\% of data grouped as other.
+Proportional bar plots of each category with caetgories containing less than 2\% of data grouped as other.
 }
 \description{
-s3 method to plot proportional barplots of categorical data. Categories that make up less than 5\% of the data are grouped together
+s3 method to plot proportional barplots of categorical data. Categories that make up less than 2\% of the data are grouped together
 }
 \examples{
 x <- Categorical_Uni_EDA(basic_test_data)

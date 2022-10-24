@@ -6,7 +6,6 @@
 \usage{
 Numeric_Uni_EDA(
   dataset,
-  detect = T,
   numeric.force = c(),
   ignore.columns = c(),
   alternate.nas = list()
@@ -15,13 +14,13 @@ Numeric_Uni_EDA(
 \arguments{
 \item{dataset}{dataset dataframe ; containing columns of each field and rows containing each record}
 
-\item{detect}{Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns}
-
 \item{numeric.force}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as numeric data type}
 
 \item{ignore.columns}{vector ; the names of the columns (as strings) or indexes of columns, or a combination, that should be ignored during analysis}
 
 \item{alternate.nas}{list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.}
+
+\item{detect}{Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns}
 }
 \value{
 List containing:
@@ -53,7 +52,6 @@ can either be automatically detected or forced by the user for analysis.
 }
 \examples{
 Numeric_Uni_EDA(dataset = example_dataset,
-                    detect = T,
                     numeric.force = c('col5','col7'),
                     ignore.columns = c('col4'),
                     alternate.nas = list(c('col1', 'error'))

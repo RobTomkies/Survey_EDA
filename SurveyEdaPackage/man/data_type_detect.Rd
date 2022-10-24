@@ -47,11 +47,31 @@ column, the free text can be split out and preserved in additional columns
 that will be added to the dataset.
 }
 \details{
-For further detail on tests for detection and forcing for data types see:
+Categorical data detection where unforced is split in to two approaches:
+
+Where data is comprised of 20 or fewer records:
 \itemize{
-\item Nominal : Nominal_Detect() function documentation
-\item Numeric : Numeric_Type_Detect() function documentation
+\item a value in the data is considered potentially nominal if over 10\% of values are that value
+\item if over 80\% of records are made up of potentially categorical values we consider the field as nominal
 }
+
+Where data is comprised of 21 or more records:
+\itemize{
+\item a value in the data is considered potentially nominal if over 5\% of values are that value
+\item if over 90\% of records are made up of potentially categorical values we consider the field as nominal
+}
+
+Of course if this is ineffective at detecting columns can be manually forced.
+
+Numeric data detection where unforced is split in to two stages:
+\itemize{
+\item Firstly whether the data is numeric or not by seeing if over 60\% is numeric information.
+\item If this is so and the data is less than 20 records long, if over 90\% of the data is integer based then overall we classify as integer
+\item If numeric and over 20 records long, if over 95\% is integer then we classify as interger
+\item If either of the last two steps fail but still over 60\% numeric information we classify as floating point numeric data
+}
+
+Of course if this is ineffective at detecting columns can be manually forced.
 
 As ordinal data is almost impossible to automatically detect, this format is only implemented
 when specified. Otherwise categorical data is detected and assumed as nominal.

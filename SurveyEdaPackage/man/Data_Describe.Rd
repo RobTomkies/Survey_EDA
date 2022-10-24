@@ -48,6 +48,9 @@ A list containing summary statistics about the dataset as a whole. These include
 \description{
 Data Describe
 }
+\details{
+For details on auto detection of data type see documentation for data_type_detect() function.
+}
 \examples{
 Data_Describe(dataset = example_dataset,
                     NLP.force = list(c('col1', 'a','b','c'), c('col2', 2,3,4)),

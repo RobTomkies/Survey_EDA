@@ -10,7 +10,8 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports:
-    pander
+    pander,
+    Rcpp
 Suggests: 
     knitr,
     rmarkdown,
@@ -28,6 +29,9 @@ Depends:
     stringr (>= 1.4.1),
     syuzhet (>= 1.0.6),
     ggraph (>= 2.0.5),
-    igraph (>= 1.3.0)
+    igraph (>= 1.3.0),
+    Rcpp (>= 1.0.9)
 LazyData: true
 VignetteBuilder: knitr
+LinkingTo: 
+    Rcpp
