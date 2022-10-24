@@ -1,5 +1,3 @@
-
-
 #logrelative error
 LRE <- function(x,c){
   if(c==0){return(round(-log(abs(x), base = 10)))}
@@ -30,13 +28,12 @@ test_that("data type forcing error, float index checks",{
 })
 
 test_that("data type forcing error, logical index checks",{
-  expect_silent(column_recog_vector('integer', rep(T, 6),  basic_test_data))
-  expect_identical(column_recog_vector('integer', c(T, T, T, F, F,F),  basic_test_data), as.integer(c(1,2,3)))
+  expect_silent(column_recog_vector('integer', rep(T, 12),  basic_test_data))
+  expect_identical(column_recog_vector('integer', c(T, T, T, F, F,F, T,T,F,F, F, F),  basic_test_data), as.integer(c(1,2,3,7,8)))
   expect_error(column_recog_vector('integer', c(T, T, F, F),  basic_test_data), 'logical forcing vector for  integer  does not match the length of dataset columns please reconsider')
 })
 
 
-#column_recog_vector('integer', c('1.2', '2', '3','4.4', 'words'),  basic_test_data)
 test_that("data type forcing error, string index checks",{
   expect_silent(column_recog_vector('integer', c('x', 'y', 'doubls'),  basic_test_data))
   expect_identical(column_recog_vector('integer', c('x', 'y', 'doubls'),  basic_test_data), as.integer(c(1,2,3)))
@@ -44,3 +41,4 @@ test_that("data type forcing error, string index checks",{
   expect_identical(w[2],  "Integer names  2, 3  not found for  integer  forcing but successfully coerced to integer index\n")
   expect_identical(w[3],  "Numeric names  1.2, 4.4  not found for  integer  forcing but successfully coerced to integer index\n")
 })
+

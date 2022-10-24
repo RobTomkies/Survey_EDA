@@ -33,9 +33,11 @@
 #' @param force boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them
 #'
 #' @return dataframe containing the adjusted dataset
-#' @export
+#'
 #'
 #' @examples
+#' Nominal_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
+#'
 Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   input_vector <- column_recog_vector('nominal', input_vector, dataset)
   #initiate dataframe to hold any split out values if needed
@@ -53,7 +55,7 @@ Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force
         detect_record[i] <- T
         #set up name trigger to ensure no double naming
         name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
+        running_name <- paste(names(dataset)[input_vector[i]], '_other')
         while(name_trigger == F){
           if(running_name %in% names(dataset)){
             running_name <- paste(running_name, '_.')
@@ -87,7 +89,7 @@ Nominal_Detect <- function(input_vector, dataset, preserve_nonconform = T, force
         detect_record[i] <- T
         #set up name trigger to ensure no double naming
         name_trigger <- F
-        running_name <- paste(names(dataset)[input_vector[i]], '_other_nominal')
+        running_name <- paste(names(dataset)[input_vector[i]], '_other')
         while(name_trigger == F){
           if(running_name %in% names(dataset)){
             running_name <- paste(running_name, '_.')

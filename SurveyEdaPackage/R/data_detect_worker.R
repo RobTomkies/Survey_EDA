@@ -1,12 +1,4 @@
-#' Title
-#'
-#' @param force_type
-#' @param input_list
-#' @param dataset
-#'
-#' @return
-#'
-#' @examples
+
 column_recog_list <- function(force_type, input_list, dataset){
   if(!(force_type %in% c('ordinal', 'alternate_NA'))){stop('invalid force type in column_recog_list')}
   #check list has been supplied
@@ -29,20 +21,10 @@ column_recog_list <- function(force_type, input_list, dataset){
   return(list(c(action_cols_index), action_levels))
 }
 
-# x <- list(c('x', 1,2,3), c('doubls', 4,5,6))
-# z <- column_recog_list('nominal', x, trial_dataframe)
-# z[[2]][[2]]
 
 
-#' Title
-#'
-#' @param force_type
-#' @param input_vector
-#' @param dataset
-#'
-#' @return
-#'
-#' @examples
+
+
 column_recog_vector <- function(force_type, input_vector, dataset){
   output_vector <- rep(NA, length(input_vector))
   if(any(duplicated(input_vector)) & !is.logical(input_vector)){
@@ -115,19 +97,6 @@ column_recog_vector <- function(force_type, input_vector, dataset){
 
 
 
-#trial_dataframe <- data.frame(ordinal_level_uno = c(1,2,3,2,3,1,'hello', 'dragon',1,2,1), x = c(1,2,3,4,3,1,2,2,2,1,4), y = c(2,3,4,6,7,8,9,5,8,4,1), doubls = c(1.1,2,3,4.1,5.2,4.6,7.1,9.7,3.4,4.3,2.1),actual_int = c('1','2','3','4','5','6','7','8', '10','9','99'),words = c('hello', 'my', 'name', 'is', 'rob', 'the', 'great', 'est', 'hero', 'ever', 'like'))
-#
-# z <- c('x', 'y', 'doubls')
-# column_recog_vector('integer', z,  trial_dataframe)
-
-#' Title
-#'
-#' @param input_list
-#' @param dataset
-#'
-#' @return
-#'
-#' @examples
 Alternate_NA_Remove <- function(input_list, dataset){
   if(length(input_list) >= 1){
     adjusted_input_list <- column_recog_list('alternate_NA', input_list, dataset)
@@ -146,7 +115,3 @@ Alternate_NA_Remove <- function(input_list, dataset){
   return(dataset)
 }
 
-# trial_data <- trial_dataframe
-# x <- list(c('x', 1,2,3), c('doubls', 2,5,6))
-# z <- Alternate_NA_Remove(x, trial_data)
-#

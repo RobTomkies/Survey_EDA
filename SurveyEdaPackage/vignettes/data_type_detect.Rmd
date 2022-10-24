@@ -1,8 +1,9 @@
 ---
-title: "data_type_detect"
+title: "Survey_EDA Overview"
+author: "Rob Tomkies"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{data_type_detect}
+  %\VignetteIndexEntry{Survey_EDA Overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,24 +15,211 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 library(SurveyEdaPackage)
 ```
 
-# Data Type Detection 
+# Package Overview
 
-This function receives a dataframe and outputs the dataframe with corrected data types. The user can force columns to a certain data type via specifying manually or allow a number of tests on data characteristics to automatically detect the likely data type. In the common case for survey data where users can select categories or enter free text and the data is included in one column, the free text can be split out and preserved in additional columns that will be added to the dataset.
+This Vignette describes Survey_EDA package. This package is designed to automate large parts of the exploratory data analysis and generate summary tables, diagnostic statistics and graphics in a quick and simple manner. This package has the ability to detect and analyse survey data including numeric, count, natural language and categorical data. For further details on package capability please see the summary Vignette (available in the doc folder). Currently all analysis is univariate. All outputs of the functions are designed to be markdown friendly.
 
-## Example Dataset
+## Available Functions
 
-The examples in this vignette will utilise the example dataset provided with the dataset. This dataset is simple with a range of data types provided. 
+This package provides four key main functions:
 
-## Basic Implementation
+- Data_Describe()
+- Categorical_Uni_EDA()
+- NLP_Uni_EDA()
+- Numeric_Uni_EDA()
 
-The simplest way to implement this function is to allow the function to be fully automatic in detecting the type of data that it believes is present. This is illistrated below where we can see the original input data format 
+As well as a further two functions for closer examinations of particular fields:
 
-```{r}
-summary(data_type_detect(basic_test_data))
-print(data_type_detect(basic_test_data))
+- data_type_detect()
+- NLP_Column_Analysis()
+
+## Available Datasets
+
+This package is designed to be generalisable and so should be effective on most datasets. This package comes with two available example datasets:
+
+- basic_test_data : A varied example dataset in the form of a dataframe with numerous data types and characteristics
+- natural_language_column : A single column dataframe with 1000 reviews sourced from: https://www.kaggle.com/datasets/anthonysusevski/course-reviews-university-of-waterloo
+
+
+## Installation
+
+To simply install the package functionality alone run the following command in your console:
+
 ```
+remotes::install_github("RobTomkies/Survey_EDA/SurveyEdaPackage")
+```
+To install the package and compile vignettes to have available on your PC run:
+
+
+```
+remotes::install_github("RobTomkies/Survey_EDA/SurveyEdaPackage",
+                         build_vignettes = TRUE)
+
+```
+To install the package, compile the vignette and also make unit testing available run:
+
+```
+remotes::install_github("RobTomkies/Survey_EDA/SurveyEdaPackage",
+                         INSTALL_opts="--install-tests",
+                         type='source',
+                         build_vignettes = TRUE)
+
+```
+
+
+# Suggested Workflow
+
+While these functions go a long way to automating the exploratory data analysis process for survey data, they are by no means a substitute for an in depth data dive. The following is a suggestion on how to utilise these functions to obtain the maximum information from your data.
+
+1. __Determine the data types present__
+
+  This can be done simply looking at the summary of data_type_detect as shown below on the example dataset. This will provide you with information on the input format of the data as well as what type of data the fields have been interpreted as. Consider these carefully as any that have not been determined to be the correct type will need to be forced to the correct type later.
+  
+```{r, results='asis'}
+summary(data_type_detect(basic_test_data))
+```
+2. __Look at the overall dataset generic characteristics__
+
+Provided that columns have been interpreted correctly this can be completed simply by calling the Data_Describe() function as shown below. This will give you key measures such as the size, dimensions, memory requirements as well as more specific measure such as missingness and repeat row counts. These outputs can be printed and plotted in markdown friendly versions. 
+
+```{r,warning=FALSE, fig.dim = c(7.5,7.5), results='asis'}
+generic_characteristics <- Data_Describe(basic_test_data)
+print(generic_characteristics)
+plot(generic_characteristics)
+```
+
+3. __Analyse Numeric Data__
+
+By utilising the Numeric_Uni_EDA function its possible to quickly and easily examine key statistics about both the float type and integer type data. The dataset is automatically reduced to just the numeric format data and histograms with boxplots as well as violin plots with box plots are plotted for integer and float type data respectively.
+
+```{r, fig.dim = c(7.5,7.5), warning=FALSE, results='asis'}
+x <- Numeric_Uni_EDA(basic_test_data)
+summary(x)
+plot(x)
+```
+
+4. __Analyse Categorical Data__
+
+Here we utilise the Categorical_Uni_EDA function to quickly analyse the categorical information present. It is possible to force Nominal data to be separate to Ordinal data types. We can plot to obtain proportional bar charts and print to see details of the most and least common fields and their counts for each data type.
+
+```{r,fig.dim = c(7.5,7.5), warning=FALSE, results='asis'}
+x <- Categorical_Uni_EDA(basic_test_data)
+print(x)
+plot(x)
+```
+
+5. __Analyse Natural Language Data__
+
+There are two methods provided to do this - either NLP_Uni_EDA() or NLP_Column_Analysis(). These two methods have slightly different documentation however the key difference is that as with the other functions, NLP_Uni_EDA takes a dataset input and has various forcing options where there NLP_Column_Analysis is designed to analyse a single column at a time. The outputs for the two different functions are identical other than NLP_Uni_EDA returning outputs for each datafield analysed. 
+
+
+```{r, fig.dim= c(7.5,12), warning=FALSE}
+x <- NLP_Column_Analysis(natural_language_column$reviews, 'Reviews')
+plot(x)
+```
+
+
+__A note on markdown__
+
+As many functions print or sumarise multiple tables its key to set results='asis' as an option for the r markdown code box options
+
+# Functionality
+
+For specific operational instructions for each function see function documentation which outlines examples and user inputs. This section outlines the methodology behind each function.
+
+## Data Type Detection (data_type_detect())
+
+Categorical data detection where unforced is split in to two approaches:
+
+1. Where data is comprised of 20 or fewer records:
+  - A value in the data is considered potentially nominal if over 10% of values are that value
+  - If over 80% of records are made up of potentially categorical values we consider the field as nominal
+
+2. Where data is comprised of 21 or more records:
+  - A value in the data is considered potentially nominal if over 5% of values are that value
+  - If over 90% of records are made up of potentially categorical values we consider the field as nominal
+
+Of course if this is ineffective at detecting columns can be manually forced.
+
+Numeric data detection where unforced is split in to two stages:
+
+1. Firstly whether the data is numeric or not by seeing if over 60% is numeric information.
+2. If this is so and the data is less than 20 records long, if over 90% of the data is integer based then overall we classify as integer
+3. If numeric and over 20 records long, if over 95% is integer then we classify as integer
+4. If either of the last two steps fail but still over 60% numeric information we classify as floating point numeric data
+
+Of course if this is ineffective at detecting columns can be manually forced.
+
+As ordinal data is almost impossible to automatically detect, this format is only implemented when specified. Otherwise categorical data is detected and assumed as nominal.
+
+Natural Language data (NLP ) is either forced manually or assumed to be the absence of either categorical (nominal or ordinal), numeric (integer or floating point).
+
+## Generic Dataset Description (Data_Describe())
+
+Many of the calculations for this function simple and defined below: 
+
+- The data type detection is based upon the logic outlined above for data_type_detect(). 
+- A missing value is defined as one either already as an NA value, or one that have been forced to NA by user input. The proportion is calculated as $100 \times$(number of NA values in a column $\div$ total number of rows)
+- Memory size is measured in Bites from the computer system
+- Original dimensions are the dimensions of the input dataset without any processing, adjusted are the dimensions of the output dataset following processing such as repeat row removal and natural language split out from categorical columns.
+
+## Numeric Data Analysis (Numeric_Uni_EDA())
+
+Analysis for numeric data is completed on columns identified by data_type_detect() logic or forced by user. From here they are split in to floating point data (continuous numeric information) or integer type data.  The following statistics are calculated for each data field:
+
+- Mean: the sum of all values in the column divided by the number of entries in the column excluding NA values
+- Median: The middle value when values are arranged in magnitude order
+- Mode: The most frequently occurring value(s)
+- Max: The maximum column value
+- Min: The minimum column value
+- I.Q.Rs: The inter quartile range for the column given by subtracting the lower quartile from the upper quartile
+- S.Ds: The standard deviation of the data 
+- Skews: Pearsons second coefficient of skewness given by $3\times\frac{mean - median}{standard \, deviation}$ which returns a positive value for a positively skewed dataset and vice versa. 
+
+Plotting displays histograms for integer data and violin plots for float type data to help further understand data distributions.
+
+## Categorical Data Analysis (Categorical_Uni_EDA())
+
+Univariate analysis of categorical data is completed and focuses on the count information of different fields. 
+
+- Most/Least Common Count: Returns the number of times the most common category occurs in a specific data field
+- Most/Least Common Groups: Returns the name of the category(s) that occured the most often in a particular data field.
+
+Proportional bar plots are plotted for each data field. Here any group of data that makes up less than 2\% of the data proportion by count is grouped in to an "other <2\%" group.
+
+
+## Natural Language Data Analysis (NLP_Uni_EDA() or NLP_Column_Analysis())
+
+Natural language processing determines a combination of full dataset statistics and within each answer statistics. Data is cleaned to remove stop words that add no meaning to the answer (eg 'and', 'or', 'very') and then as analysis is only completed in english only alpha-numeric and punctuation characters were kept before putting the cleaned data through the following analysis.
+
+- N-grams (frquency, bigram, trigram) are formed of combinations of words that occur consecutively in text. In this function we calculate word frequency (1-gram), bigrams (2-grams, 2 consecutive words) and trigrams (3 consecutive words) within the dataset to see commonly mentioned phrases. These phrases are non reversible and so 'scary film' would be separate to 'film scary'. These are non response specific. This approach is good for recognising key phrases in text.
+
+- Word correlation is determined using the Pearson correlation where we look at how often within responses two words appear. This approach is often good at picking out key themes or clusters of topics in data. Correlation is non order specific. If we look at the following table describing the counts of responses that have or do not have a certain word:
+
+|                    | Word 1 Present | Word 1 Not Present | Total  |
+|--------------------|----------------|--------------------|--------|
+| Word 2 Present     | n_{11}         | n_{10}             | n_{1.} |
+| Word 2 Not Present | n_{01}         | n_{00}             | n_{0.} |
+| Total              | n_{.1}         | n_{.0}             | n      |
+
+Then we can say that the pearson correlation is: (from : https://www.tidytextmining.com/ngrams.html)
+
+$$correlation = \frac{n_{11}n_{00} - n_{10}n_{01}}{\sqrt{n_{1.}\times n_{0.} \times n_{.0} \times n_{.1}}}$$
+
+- tf_idf often works better with longer response answers. By looking at the words that are rarer compared to the general language of the responses, significant words can be identified. This is done via their tf-idf score. For more information see : https://www.tidytextmining.com/tfidf.html
+
+- sentiment score is a numeric value assigned to each of anger, anticipation, disgust, fear, joy, sadness, surprise, trust, negative and positive for each response using the NRC sentiment dictionary (https://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm). These are determined individually for each response however to obtain a datafield overview these scores are simply aggregated.
+
+
+
+
+
+
+
+
+
 

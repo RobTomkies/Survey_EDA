@@ -13,7 +13,7 @@
 #'
 #'
 #' @details
-#' Categorical data detection where unforced is split in to two stages.
+#' Numeric data detection where unforced is split in to two stages.
 #'
 #' - Firstly whether the data is numeric or not by seeing if over 60% is numeric information.
 #' - If this is so and the data is less than 20 records long, if over 90% of the data is integer based then overall we classify as integer
@@ -28,10 +28,11 @@
 #' @param preserve_nonconform boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column
 #' @param force boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them
 #'
-#' @return
-#' @export
+#' @return dataframe containing the adjusted dataset
 #'
 #' @examples
+#' Numeric_Type_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
+#'
 Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, force = F){
   #clean up input_vector
   input_vector <- column_recog_vector('numeric', input_vector, dataset)
@@ -78,7 +79,7 @@ Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, 
 
         name_trigger <- F
         if(preserve_nonconform == T){
-          running_name <- paste(names(dataset)[input_vector[i]], '_other_numeric')
+          running_name <- paste(names(dataset)[input_vector[i]], '_other')
           while(name_trigger == F){
             if(running_name %in% names(dataset)){
               running_name <- paste(running_name, '_.')
@@ -154,8 +155,4 @@ Numeric_Type_Detect <- function(input_vector, dataset, preserve_nonconform = T, 
   }
 }
 
-#
-# trial_data <- trial_dataframe
-# x <- c('ordinal_level_uno','x', 'words') #, c('doubls', 2,5,6)
-# z <- Numeric_Type_Detect(x, trial_data, F, T)
-# typeof(z$ordinal_level_uno)
+

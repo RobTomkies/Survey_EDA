@@ -13,6 +13,9 @@ Ordinal_Force(input_list, dataset, preserve_nonconform = T)
 
 \item{preserve_nonconform}{boolean ; value (T of F) on whether to separate and store data that does not conform to the detected/specified column type in an additional column}
 }
+\value{
+dataset with Ordinal data forced
+}
 \description{
 Ordinal Data Forcing
 }

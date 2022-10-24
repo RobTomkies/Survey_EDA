@@ -9,9 +9,27 @@
 #' that will be added to the dataset.
 #'
 #'@details
-#' For further detail on tests for detection and forcing for data types see:
-#'  - Nominal : Nominal_Detect() function documentation
-#'  - Numeric : Numeric_Type_Detect() function documentation
+#' Categorical data detection where unforced is split in to two approaches:
+#'
+#' Where data is comprised of 20 or fewer records:
+#' - a value in the data is considered potentially nominal if over 10% of values are that value
+#' - if over 80% of records are made up of potentially categorical values we consider the field as nominal
+#'
+#' Where data is comprised of 21 or more records:
+#' - a value in the data is considered potentially nominal if over 5% of values are that value
+#' - if over 90% of records are made up of potentially categorical values we consider the field as nominal
+#'
+#' Of course if this is ineffective at detecting columns can be manually forced.
+#'
+#' Numeric data detection where unforced is split in to two stages:
+#'
+#' - Firstly whether the data is numeric or not by seeing if over 60% is numeric information.
+#' - If this is so and the data is less than 20 records long, if over 90% of the data is integer based then overall we classify as integer
+#' - If numeric and over 20 records long, if over 95% is integer then we classify as interger
+#' - If either of the last two steps fail but still over 60% numeric information we classify as floating point numeric data
+
+#'
+#' Of course if this is ineffective at detecting columns can be manually forced.
 #'
 #' As ordinal data is almost impossible to automatically detect, this format is only implemented
 #' when specified. Otherwise categorical data is detected and assumed as nominal.
@@ -22,7 +40,7 @@
 #'
 #' @param dataset dataframe ; containing columns of each field and rows containing each record
 #' @param NLP_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type
-#' @param ordinal_force list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the nominal in order you wish them to be handles.
+#' @param ordinal_force list ; containing vectors for each column you wished forced to ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal in order you wish them to be handles.
 #' @param nominal_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to nominal data type
 #' @param numeric_force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced to numeric data type.
 #' @param alternate_nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.
@@ -48,13 +66,14 @@
 
 data_type_detect <- function(dataset,
                              NLP_force = c(),
-                             ordinal_force = list(), #list(c(‘colname’, ‘level1’, ‘level2’))
+                             ordinal_force = list(),
                              nominal_force = c(),
                              numeric_force = c(),
-                             alternate_nas = list(), #list(c(“colname1”, 0, 99),c(“colname2”, “hold”))
+                             alternate_nas = list(),
                              preserve_nonconform = T){
   #check input format
   if(!is.data.frame(dataset)){stop('Please pass a dataframe type structure to the function')}
+  if(!( is.logical(preserve_nonconform))){stop('Inputs for "preserve_nonconform"  must be logical True or False, please correct')}
 
 
 
@@ -68,27 +87,35 @@ data_type_detect <- function(dataset,
   original_type[original_typeb == "logical"] <- 'Nominal'
   original_type[original_typeb == "numeric"] <- 'Float'
   original_type[original_typeb == "integer"] <- 'Integer'
-  original_type[original_typeb == "character"] <- 'NLP'
+  original_type[original_typeb == "character"] <- 'Natural Language'
 
   #remove alternate NAs
   dataset <- Alternate_NA_Remove(alternate_nas, dataset)
 
   #determine forced columns
   if(length(NLP_force) >= 1){
-    NLP_force <- column_recog_vector('NLP', NLP_force, dataset)
+    NLP_force <- column_recog_vector('Natural Language', NLP_force, dataset)
   }
+
   if(length(nominal_force) >= 1){
     nominal_force <- column_recog_vector('nominal', nominal_force, dataset)
   }
+
   if(length(numeric_force) >= 1){
     numeric_force <- column_recog_vector('numeric', numeric_force, dataset)
   }
   if(length(ordinal_force) >= 1){
-    ordinal_force <- column_recog_list('ordinal', ordinal_force, dataset)
-    forced_columns <- c(NLP_force, nominal_force, numeric_force, ordinal_force[[1]])
+    ordinal_forceb <- column_recog_list('ordinal', ordinal_force, dataset)
+    ordinal_force <- list()
+    length(ordinal_force)<- length(ordinal_forceb[[1]])
+    for(i in 1:length(ordinal_forceb[[1]])){
+      ordinal_force[[i]] <- c(ordinal_forceb[[1]][i],ordinal_forceb[[2]][[i]] )
+    }
+    forced_columns <- c(NLP_force, nominal_force, numeric_force, ordinal_forceb[[1]])
   }
   else{
     forced_columns <- c(NLP_force, nominal_force, numeric_force)
+
   }
   if(any(duplicated(forced_columns))){
     stop(paste('Column', forced_columns[duplicated(forced_columns)], 'has been forced to multiple data types, please reconsider'))
@@ -100,6 +127,7 @@ data_type_detect <- function(dataset,
   else{
     columns_to_detect <- (1:ncol(dataset))
   }
+
 
   #force columns
 #!TODO repeats the column recog function - look at streamlining
@@ -120,7 +148,7 @@ data_type_detect <- function(dataset,
 
   if(length(nominal_force) >= 1){
     dataset <- Nominal_Detect(nominal_force, dataset, preserve_nonconform = preserve_nonconform, force = T)
-  }
+    }
 
   if(length(NLP_force) >= 1){
     dataset <- NLP_Convert(NLP_force, dataset)
@@ -146,27 +174,29 @@ data_type_detect <- function(dataset,
   }
 
   if(length(columns_to_detect) >= 1){
-    #remainder columns set to NLP
+    #remainder columns set to Natural Language
     dataset <- NLP_Convert(columns_to_detect, dataset)
   }
 
 
   NLP_final <- names(dataset)[c(columns_to_detect, NLP_force)]
-  Integer_final <- names(dataset)[c(ints_forced, ints_detected)]
-  Floating_final <- names(dataset)[c(double_forced, double_detected)]
-  Nominal_final <- names(dataset)[c(cats_detected, nominal_force)]
+  Integer_final <- if(exists('ints_detected')){names(dataset)[c(ints_forced, ints_detected)]}else{names(dataset)[c(ints_forced)]}
+  Floating_final <- if(exists('double_detected')){names(dataset)[c(double_forced, double_detected)]}else{names(dataset)[c(double_forced)]}
+  Nominal_final <- if(exists('cats_detected')){names(dataset)[c(cats_detected, nominal_force)]}else{names(dataset)[nominal_force]}
+
   Ordinal_final <- c()
   if(length(ordinal_force)>= 1){
-    Ordinal_final <- names(dataset)[c(ordinal_force)]
+    Ordinal_final <- names(dataset)[ordinal_forceb[[1]]]
   }
 
 
   converted_names<- original_names
-  converted_names[original_names %in% NLP_final] <- 'NLP'
+  converted_names[original_names %in% NLP_final] <- 'Natural Language'
   converted_names[original_names %in% Integer_final] <-'Integer'
   converted_names[original_names %in% Floating_final] <- 'Float'
   converted_names[original_names %in% Nominal_final] <-'Nominal'
   converted_names[original_names %in% Ordinal_final] <-'Ordinal'
+
 
   output <- list(data = dataset,
                  original_type = data.frame(data_field = original_names, data_type = original_type),
@@ -175,31 +205,36 @@ data_type_detect <- function(dataset,
   return(output)
 }
 
-
-
-
+#' Print function for data_detected s3 object
+#'
+#' Prints the top 10 rows of the output data following running the data_type_detect() function
+#'
+#' @param x data_detected s3 object
+#'
 #' @export
 print.data_detected <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   data <- x$data
   pander(head(data))
 }
 
 
+#' Summary function for data_detected s3 object
+#'
+#' Prints markdown friendly table of the input data format detected as well as the output format of data following running the data_type_detect() function
+#'
+#' @param x data_detected s3 object
+#'
 #' @export
 summary.data_detected <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   data <- x$original_type
   data <- cbind(data_field = data[,1], original_type = data[,2], converted_type = x$converted_type[,2])
   pander(data)
 }
 
-# trial_data <- trial_dataframe
-# # xb <- c('x', 'ordinal_level_uno' ) #, c('doubls', 2,5,6)
-# z <- data_type_detect(trial_data)
-# print(z)
-# summary(z)
 
-
-
-# typeof(z$x)

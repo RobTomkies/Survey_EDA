@@ -15,6 +15,9 @@ Numeric_Type_Detect(input_vector, dataset, preserve_nonconform = T, force = F)
 
 \item{force}{boolean ; (T of F) of whether you wish to force the specified columns or look to automatically detect from within them}
 }
+\value{
+dataframe containing the adjusted dataset
+}
 \description{
 This function receives a dataframe and outputs the dataframe with numeric columns
 either forced to integer or floating point or detected and converted to one or the other. The user can
@@ -28,7 +31,7 @@ that will be added to the dataset.
 \details{
 It is recommended that if not forcing but auto detection that function data_type_detect() is used instead.
 
-Categorical data detection where unforced is split in to two stages.
+Numeric data detection where unforced is split in to two stages.
 \itemize{
 \item Firstly whether the data is numeric or not by seeing if over 60\% is numeric information.
 \item If this is so and the data is less than 20 records long, if over 90\% of the data is integer based then overall we classify as integer
@@ -37,4 +40,8 @@ Categorical data detection where unforced is split in to two stages.
 }
 
 Of course if this is ineffective at detecting columns can be manually forced.
+}
+\examples{
+Numeric_Type_Detect(c('col1','col2'), basic_test_data, preserve_nonconform = T, force = F)
+
 }
