@@ -8,7 +8,6 @@
 #' can either be automatically detected or forced by the user for analysis.
 #'
 #' @param dataset dataset dataframe ; containing columns of each field and rows containing each record
-#' @param detect Boolean ; True or False value on where the user wishes the function to automatically detect additional categorical fields, if false will only use the forced columns
 #' @param numeric.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as numeric data type
 #' @param ignore.columns vector ; the names of the columns (as strings) or indexes of columns, or a combination, that should be ignored during analysis
 #' @param alternate.nas list ; containing vectors for each column you wish to specify alternate/additional NA values for. The first element of each vector should be the name/index of the column you wish to force followed by the additional values in the column that should be considered as NA.

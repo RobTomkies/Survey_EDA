@@ -1,4 +1,4 @@
-#'Univariate Categorical Exploratory Data Analysis
+#' Univariate Categorical Exploratory Data Analysis
 #'
 #' This function receives a dataframe containing survey data with one column
 #' for each question and will output summary and characteristic values for the

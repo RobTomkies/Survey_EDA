@@ -35,7 +35,7 @@ tfidf_score <- function(column){
 
 
 
-#' @export
+
 EDA_Word_cor_score <- function(column){
 
   dataset <- column %>%  unnest_tokens(word, text)%>%
