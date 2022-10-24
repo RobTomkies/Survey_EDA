@@ -112,12 +112,12 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
     theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
 
-  if(suppressWarnings(is.na(x$Corr_matrix))){
+  suppressWarnings(if(is.na(x$Corr_matrix)){
     corrolation_plot <- ggplot() + theme_void()
   }
   else{
     corrolation_plot <- x$Corr_matrix %>%
-      filter(correlation > .2) %>%
+      filter(correlation > cor_cut) %>%
       graph_from_data_frame() %>%
       ggraph(layout = "fr") +
       geom_edge_link(show.legend = FALSE) +
@@ -125,7 +125,7 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
       geom_node_text(aes(label = name), repel = TRUE) +
       theme_void()+
       labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
-  }
+  })
 
 
   graphics <- ggarrange(ggarrange(sentiment_summary, word_frequency, ncol = 2),
