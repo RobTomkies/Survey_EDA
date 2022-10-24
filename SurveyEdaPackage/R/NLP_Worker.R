@@ -46,7 +46,7 @@ EDA_Word_cor_score <- function(column){
 
   word_corrs <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
     group_by(word) %>%
-    filter(n() >= 25)
+    filter(n() >= 15)
 
   if(length(word_corrs$word) <= 5){warning('fewer than 5 meaningful words in column, word corrolation analysis not possible')
     word_corrs <- NA}
@@ -69,10 +69,8 @@ NLP_ngram  <- function(column, n){
   dataset <- column %>%
     unnest_tokens(bigram, text, token = "ngrams", n = n) %>%
     separate(bigram, column_names, sep = " ") %>%
-    select(column_names)
-
+    select(all_of(column_names))
   dataset <- data.frame(lapply(dataset, function(x)return(x %>% str_extract("^[a-z0-9'._]*$"))))
-
 
   dataset <- filter_all(dataset, all_vars(!(. %in% stop_words$word)))%>%
     filter_all(all_vars(!is.na(.)))%>%

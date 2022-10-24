@@ -141,6 +141,7 @@ Categorical_Uni_EDA <- function(dataset,
 #'
 #' @export
 print.Categorical_EDA <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   if(!is.null(x$Nominal_Statistics[1])){
     nom_data <- x$Nominal_Statistics

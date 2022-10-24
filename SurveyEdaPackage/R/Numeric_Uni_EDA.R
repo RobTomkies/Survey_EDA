@@ -83,6 +83,7 @@ Numeric_Uni_EDA <- function(dataset,
   int_means <- RCPPColMean(as.matrix(integer_data))
   int_medians <-RCPPColMedian(as.matrix(integer_data))
   int_modes <- lapply(integer_data, function(x)return(as.numeric(names(table(x))[table(x) == max(table(x))])))
+  int_modes <- sapply(int_modes, function(x){if(length(x)>10){return('More than 10 values')}else{return(x)}})
   int_max <-RCPPColMax(as.matrix(integer_data))
   int_min <-RCPPColMin(as.matrix(integer_data))
   int_IQR <- sapply(integer_data, IQR, na.rm = T)
@@ -100,6 +101,7 @@ Numeric_Uni_EDA <- function(dataset,
   float_means <- RCPPColMean(as.matrix(double_data))
   float_medians <-RCPPColMedian(as.matrix(double_data))
   float_modes <- lapply(double_data, function(x)return(as.numeric(names(table(x))[table(x) == max(table(x))])))
+  float_modes <- sapply(float_modes, function(x){if(length(x)>10){return('More than 10 values')}else{return(x)}})
   float_max <-RCPPColMax(as.matrix(double_data))
   float_min <-RCPPColMin(as.matrix(double_data))
   float_IQR <- sapply(double_data, IQR, na.rm = T)
@@ -138,6 +140,7 @@ Numeric_Uni_EDA <- function(dataset,
 #'
 #' @export
 print.Numeric_EDA <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   integer_names <- names(x$Interger_Data)
   float_names <- names(x$Double_Data)
@@ -185,6 +188,7 @@ print.Numeric_EDA <- function(x){
 #'
 #' @export
 summary.Numeric_EDA <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   integer_names <- names(x$Interger_Data)
   num_o_ints <- length(integer_names)
@@ -243,9 +247,8 @@ plot.Numeric_EDA <- function(x){
     labs(title="Float Type",x="Variable", y = "Value (Each Independent)")+
     facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right") + coord_flip()
 
-  hists <- ggplot(x$Interger_Data%>% pivot_longer( everything()), aes(x = value)) +
-    geom_histogram(fill = "#A4A4A4", colour = "darkred", bins = 15) +  geom_boxplot(width=0.1, position= position_nudge(y=-.2)) +
-    theme_minimal()+
+  hists <- ggplot(x$Interger_Data%>% pivot_longer( everything()), aes(x = value)) +theme_minimal()+
+    geom_histogram(fill = "#A4A4A4", colour = "darkred", bins = 15) +  geom_boxplot(width=0.1, position= position_nudge(y=-.5)) +
     labs(title="Integer Type",x="Value (Each Independent)", y = "Variable") +
     facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
 

@@ -213,6 +213,8 @@ data_type_detect <- function(dataset,
 #'
 #' @export
 print.data_detected <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   data <- x$data
   pander(head(data))
@@ -227,6 +229,8 @@ print.data_detected <- function(x){
 #'
 #' @export
 summary.data_detected <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   data <- x$original_type
   data <- cbind(data_field = data[,1], original_type = data[,2], converted_type = x$converted_type[,2])

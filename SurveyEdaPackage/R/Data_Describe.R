@@ -2,6 +2,8 @@
 
 #' Data Describe
 #'
+#' Function calculates key measures such as the size, dimensions, memory requirements as well as more specific measure such as missingness and repeat row counts. These outputs can be printed and plotted in markdown friendly versions.
+#'
 #' @param dataset dataframe ; containing columns of each field and rows containing each record
 #' @param NLP.force vector ; containing the names of the columns (as strings) or indexes of columns, or a combination, that should be forced and analysed as natural language (NLP) data type
 #' @param ordinal.force list ; containing vectors for each column you wished forced and analysed as ordinal data type. The first element of each vector should be the name/index of the column you wish to force, followed by levels of the ordinal data in order you wish them to be handled.
@@ -146,6 +148,7 @@ Data_Describe <- function(dataset,
 #'
 #' @export
 print.data_describe <- function(x){
+  panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   pander(x$dimensions, caption = "Data Dimensions")
 

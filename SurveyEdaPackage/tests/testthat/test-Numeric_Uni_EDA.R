@@ -85,8 +85,8 @@ test_that("Check float type key outputs are correct",{
   expect_true(LRE(x$Float_Characteristics$Skews[1], 0.2098306) > 5)
   expect_true(LRE(x$Float_Characteristics$Skews[2], 0.2397047 ) > 5)
 
-  expect_length(x$Float_Characteristics$Modes$doubles_with_na, 176)
-  expect_length(x$Float_Characteristics$Modes$doubls, 200)
+  expect_equal(x$Float_Characteristics$Modes['doubles_with_na'], c(doubles_with_na = "More than 10 values") )
+  expect_equal(x$Float_Characteristics$Modes['doubls'], c(doubls = "More than 10 values" ))
 })
 
 

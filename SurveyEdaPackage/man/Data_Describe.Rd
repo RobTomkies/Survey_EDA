@@ -46,7 +46,7 @@ A list containing summary statistics about the dataset as a whole. These include
 }
 }
 \description{
-Data Describe
+Function calculates key measures such as the size, dimensions, memory requirements as well as more specific measure such as missingness and repeat row counts. These outputs can be printed and plotted in markdown friendly versions.
 }
 \details{
 For details on auto detection of data type see documentation for data_type_detect() function.

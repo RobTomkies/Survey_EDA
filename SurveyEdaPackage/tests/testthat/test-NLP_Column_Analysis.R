@@ -23,6 +23,7 @@ test_that("Output data structures are correct types",{
 
 
 test_that("Key Values are correct",{
+  set.seed(0)
   x <- suppressWarnings(NLP_Column_Analysis(basic_test_data$reviews, 'Reviews'))
 
   expect_equal(x$Word_Frequency$n[1], 77)
@@ -37,9 +38,9 @@ test_that("Key Values are correct",{
   expect_identical(x$Trigrams$word2[1], 'math')
   expect_identical(x$Trigrams$word3[1], 'courses')
 
-  expect_true(LRE(x$Corr_matrix$correlation[1], 0.2485874)>5)
-  expect_identical(x$Corr_matrix$item1[1], 'assignments')
-  expect_identical(x$Corr_matrix$item2[1], 'midterm')
+  expect_true(LRE(x$Corr_matrix$correlation[1], 0.8039289)>5)
+  expect_identical(x$Corr_matrix$item1[1], 'hours')
+  expect_identical(x$Corr_matrix$item2[1], 'office')
 
   expect_equal(x$Tf_idf$response[1], 40)
   expect_true(LRE(x$Tf_idf$tf_idf[1], 5.298317)>5)
