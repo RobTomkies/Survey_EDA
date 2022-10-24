@@ -12,22 +12,22 @@ reponse_word_count <- function(column){
 
 
 tfidf_score <- function(column){
-  dataset <- column %>%  unnest_tokens(word, text)%>%
-    filter(!word %in% stop_words$word)
+  dataset <- column %>%  tidytext::unnest_tokens(word, text)%>%
+    dplyr::filter(!word %in% tidytext::stop_words$word)
 
   dataset$word <- dataset$word %>%
-    str_extract( "^[a-z0-9'._]*$")
+    stringr::str_extract( "^[a-z0-9'._]*$")
 
-  dataset <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
-    count(response, word, sort = TRUE)
+  dataset <- dataset %>% dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>%
+    dplyr::count(response, word, sort = TRUE)
 
   total_words <- dataset %>%
-    summarize(total = sum(n))
+    dplyr::summarize(total = sum(n))
 
-  dataset <- dataset %>% mutate(total_words) %>%
-    bind_tf_idf(word, response , n) %>%
-    arrange(desc(tf_idf)) %>%
-    select(response, word, tf_idf) %>%
+  dataset <- dataset %>% dplyr::mutate(total_words) %>%
+    tidytext::bind_tf_idf(word, response , n) %>%
+    dplyr::arrange(desc(tf_idf)) %>%
+    dplyr::select(response, word, tf_idf) %>%
     head(n = 500)
 
   return(dataset)
@@ -35,23 +35,23 @@ tfidf_score <- function(column){
 
 
 
-#' @export
+
 EDA_Word_cor_score <- function(column){
 
-  dataset <- column %>%  unnest_tokens(word, text)%>%
-    filter(!word %in% stop_words$word)
+  dataset <- column %>%  tidytext::unnest_tokens(word, text)%>%
+    dplyr::filter(!word %in% tidytext::stop_words$word)
 
   dataset$word <- dataset$word %>%
-    str_extract( "^[a-z0-9'._]*$")
+    stringr::str_extract( "^[a-z0-9'._]*$")
 
-  word_corrs <- dataset %>% filter_all(all_vars(!is.na(.))) %>%
-    group_by(word) %>%
-    filter(n() >= 15)
+  word_corrs <- dataset %>% dplyr::filter_all(dplyr::all_vars(!is.na(.))) %>%
+    dplyr::group_by(word) %>%
+    dplyr::filter(n() >= 15)
 
   if(length(word_corrs$word) <= 5){warning('fewer than 5 meaningful words in column, word corrolation analysis not possible')
     word_corrs <- NA}
   else{
-    word_corrs<- word_corrs %>% pairwise_cor(word, response , sort = TRUE)%>%
+    word_corrs<- word_corrs %>% widyr::pairwise_cor(word, response , sort = TRUE)%>%
       head(n = 1000)
   }
 
@@ -67,14 +67,14 @@ NLP_ngram  <- function(column, n){
     column_names[i] <- paste('word', i, sep = '')
   }
   dataset <- column %>%
-    unnest_tokens(bigram, text, token = "ngrams", n = n) %>%
-    separate(bigram, column_names, sep = " ") %>%
-    select(all_of(column_names))
-  dataset <- data.frame(lapply(dataset, function(x)return(x %>% str_extract("^[a-z0-9'._]*$"))))
+    tidytext::unnest_tokens(bigram, text, token = "ngrams", n = n) %>%
+    tidyr::separate(bigram, column_names, sep = " ") %>%
+    dplyr::select(all_of(column_names))
+  dataset <- data.frame(lapply(dataset, function(x)return(x %>% stringr::str_extract("^[a-z0-9'._]*$"))))
 
-  dataset <- filter_all(dataset, all_vars(!(. %in% stop_words$word)))%>%
-    filter_all(all_vars(!is.na(.)))%>%
-    count(across(), sort = TRUE) %>%
+  dataset <- dplyr::filter_all(dataset, dplyr::all_vars(!(. %in% tidytext::stop_words$word)))%>%
+    dplyr::filter_all(dplyr::all_vars(!is.na(.)))%>%
+    dplyr::count(across(), sort = TRUE) %>%
     head(n = 500)
   return(data.frame(dataset))
 }

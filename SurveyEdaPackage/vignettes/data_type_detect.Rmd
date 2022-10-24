@@ -75,6 +75,24 @@ remotes::install_github("RobTomkies/Survey_EDA/SurveyEdaPackage",
 
 While these functions go a long way to automating the exploratory data analysis process for survey data, they are by no means a substitute for an in depth data dive. The following is a suggestion on how to utilise these functions to obtain the maximum information from your data.
 
+The following code provides an EDA of any input dataset. More detail on the outputs is shown below.
+
+```{r eval = FALSE}
+summary(data_type_detect(basic_test_data))
+generic_characteristics <- Data_Describe(basic_test_data)
+print(generic_characteristics)
+plot(generic_characteristics)
+x <- Numeric_Uni_EDA(basic_test_data)
+summary(x)
+plot(x)
+x <- Categorical_Uni_EDA(basic_test_data)
+print(x)
+plot(x)
+x <- NLP_Uni_EDA(basic_test_data)
+plot(x)
+```
+
+
 1. __Determine the data types present__
 
   This can be done simply looking at the summary of data_type_detect as shown below on the example dataset. This will provide you with information on the input format of the data as well as what type of data the fields have been interpreted as. Consider these carefully as any that have not been determined to be the correct type will need to be forced to the correct type later.

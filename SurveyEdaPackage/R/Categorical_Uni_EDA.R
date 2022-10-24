@@ -1,4 +1,4 @@
-#'Univariate Categorical Exploratory Data Analysis
+#' Univariate Categorical Exploratory Data Analysis
 #'
 #' This function receives a dataframe containing survey data with one column
 #' for each question and will output summary and characteristic values for the
@@ -141,7 +141,7 @@ Categorical_Uni_EDA <- function(dataset,
 #'
 #' @export
 print.Categorical_EDA <- function(x){
-  panderOptions('knitr.auto.asis', FALSE)
+  pander::panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   if(!is.null(x$Nominal_Statistics[1])){
     nom_data <- x$Nominal_Statistics
@@ -150,8 +150,8 @@ print.Categorical_EDA <- function(x){
     for(i in 1:length(nom_data)){
       nom_output[i,] <- c(names(nom_data)[i], nom_data[[i]]$Max_Count, paste(nom_data[[i]]$Max_Categories, collapse = ', '), nom_data[[i]]$Min_Count, paste(nom_data[[i]]$Min_Categories, collapse = ', '))
     }
-    pander(nom_output[,c(1,2,3)], caption = 'Nominal Data Summary - Most Common')
-    pander(nom_output[,c(1,4,5)], caption = 'Nominal Data Summary - Least Common')
+    pander::pander(nom_output[,c(1,2,3)], caption = 'Nominal Data Summary - Most Common')
+    pander::pander(nom_output[,c(1,4,5)], caption = 'Nominal Data Summary - Least Common')
   }
 
   if(!is.null(x$Ordinal_Statistics[1])){
@@ -161,8 +161,8 @@ print.Categorical_EDA <- function(x){
     for(i in 1:length(ord_data)){
       nom_output[i,] <- c(names(ord_data)[i], ord_data[[i]]$Max_Count, paste(ord_data[[i]]$Max_Categories, collapse = ', '), ord_data[[i]]$Min_Count, paste(ord_data[[i]]$Min_Categories, collapse = ', '))
     }
-    pander(ord_output[,c(1,2,3)], caption = 'Ordinal Data Summary - Most Common')
-    pander(ord_output[,c(1,4,5)], caption = 'Ordinal Data Summary - Least Common')
+    pander::pander(ord_output[,c(1,2,3)], caption = 'Ordinal Data Summary - Most Common')
+    pander::pander(ord_output[,c(1,4,5)], caption = 'Ordinal Data Summary - Least Common')
   }
 }
 
@@ -187,72 +187,72 @@ plot.Categorical_EDA <- function(x){
 
     ord_names <- names(x$Ordinal_Data)
     num_o_ords <- length(ord_names)
-    data <- x$Ordinal_Data %>% pivot_longer(everything()) %>% group_by(value, name)%>%
-      summarise(total_count=n(),.groups = 'drop') %>%
-      mutate(prop = total_count / sum(total_count)) %>%
-      filter(prop >= 0.02)%>%
+    data <- x$Ordinal_Data %>% tidyr::pivot_longer(dplyr::everything()) %>% dplyr::group_by(value, name)%>%
+      dplyr::summarise(total_count=n(),.groups = 'drop') %>%
+      dplyr::mutate(prop = total_count / sum(total_count)) %>%
+      dplyr::filter(prop >= 0.02)%>%
       as.data.frame()
     data$value <- as.character(data$value)
 
 
     for(i in 1:length(unique(data$name))){
-      working <- data %>% filter(name == unique(data$name)[i])
+      working <- data %>% dplyr::filter(name == unique(data$name)[i])
       other_prop <- 1 - sum(working$prop)
-      data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
-        arrange(desc(prop))
+      data <- data %>% dplyr::add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
+        dplyr::arrange(desc(prop))
     }
     new_dataframe <- data.frame(matrix(nrow = nrow(data), ncol =ncol(data)+1 ))
     names(new_dataframe) <- c(names(data), 'label')
     row_count <- 0
     for(i in 1:length(unique(data$name))){
-      working <- data %>% filter(name == unique(data$name)[i])
+      working <- data %>% dplyr::filter(name == unique(data$name)[i])
       temp_row <- nrow(working)
-      working <- working %>% mutate(label = cumsum(prop))
+      working <- working %>% dplyr::mutate(label = cumsum(prop))
       new_dataframe[(row_count+1):(row_count + temp_row),] <- working
       row_count <- row_count + temp_row
     }
-    print(ggplot(new_dataframe) +
-      aes(x = name, y = prop, fill = value, group=prop) +
+    print(ggplot2::ggplot(new_dataframe) +
+      ggplot2::aes(x = name, y = prop, fill = value, group=prop) +
       ggtitle("Ordinal Data")+
-      geom_col()+
-      geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
-      facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
-      theme(legend.position="none"))
+      ggplot2::geom_col()+
+      ggplot2::geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
+      ggplot2::facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
+      ggplot2::theme(legend.position="none"))
   }
 
   if(!is.null(x$Nominal_Data[1])){
     Nominal_names <- names(x$Nominal_Data)
     num_o_nums <- length(Nominal_names)
-    data <- x$Nominal_Data %>% pivot_longer(everything()) %>% group_by(value, name)%>%
-      summarise(total_count=n(),.groups = 'drop') %>%
-      mutate(prop = total_count / sum(total_count)) %>%
-      filter(prop >= 0.02)%>%
+    data <- x$Nominal_Data %>% tidyr::pivot_longer(dplyr::everything()) %>% dplyr::group_by(value, name)%>%
+      dplyr::summarise(total_count=n(),.groups = 'drop') %>%
+      dplyr::mutate(prop = total_count / sum(total_count)) %>%
+      dplyr::filter(prop >= 0.02)%>%
       as.data.frame()
     data$value <- as.character(data$value)
 
 
     for(i in 1:length(unique(data$name))){
-      working <- data %>% filter(name == unique(data$name)[i])
+      working <- data %>% dplyr::filter(name == unique(data$name)[i])
       other_prop <- 1 - sum(working$prop)
-      data <- data %>% add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
-        arrange(desc(prop))
+      data <- data %>% dplyr::add_row(value = 'other <2%', name = as.character(unique(data$name)[i]), total_count = NA, prop = other_prop)%>%
+        dplyr::arrange(desc(prop))
     }
     new_dataframe <- data.frame(matrix(nrow = nrow(data), ncol =ncol(data)+1 ))
     names(new_dataframe) <- c(names(data), 'label')
     row_count <- 0
     for(i in 1:length(unique(data$name))){
-      working <- data %>% filter(name == unique(data$name)[i])
+      working <- data %>% dplyr::filter(name == unique(data$name)[i])
       temp_row <- nrow(working)
-      working <- working %>% mutate(label = cumsum(prop))
+      working <- working %>% dplyr::mutate(label = cumsum(prop))
       new_dataframe[(row_count+1):(row_count + temp_row),] <- working
       row_count <- row_count + temp_row
     }
-    print(ggplot(new_dataframe) +
-      aes(x = name, y = prop, fill = value, group=prop) +
+    print(ggplot2::ggplot(new_dataframe) +
+      ggplot2::aes(x = name, y = prop, fill = value, group=prop) +
       ggtitle("Nominal Data")+
-      geom_col()+
-      geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
-      facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
-      theme(legend.position="none"))
+      ggplot2::geom_col()+
+      ggplot2::geom_text(aes(y = label, label = value), vjust = 1., colour = "black") +
+      ggplot2::facet_wrap(name ~ ., scales = "free", ncol= 5,strip.position="top")+
+      ggplot2::theme(legend.position="none"))
   }
 }

@@ -7,9 +7,9 @@
 NLP_Convert(input_vector, dataset)
 }
 \arguments{
-\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
+\item{input_vector}{vector ; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type}
 
-\item{input_vectorvector}{; containing the names of the columns (as strings) or indexes of columns, or a combination,  that should be forced to natural language data type}
+\item{dataset}{dataframe ; containing columns of each field and rows containing each record}
 }
 \value{
 dataset with coverted columns

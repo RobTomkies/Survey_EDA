@@ -78,64 +78,64 @@ plot.NLP_Column_Analysis <- function(x, cor_cut = 0.2){
   sentiment_counts <- sapply(x$Sentiments, sum)
   plot_frame <- data.frame(Emotions = emotions, Sentiment_Score = sentiment_counts)
 
-  sentiment_summary <- ggplot(plot_frame, aes(x = factor(Emotions, levels = Emotions), y = Sentiment_Score , fill=Sentiment_Score)) +
-    geom_bar(stat = "identity", color="black")+theme_minimal() +
-    labs(title="Cumulate Sentiment Score",x="Emotion", y = "Cumulative Score")+ theme(legend.position="none")+
-    theme(axis.text.x = element_text(angle = 45, hjust=1)) +scale_fill_distiller(palette = "Greens")
+  sentiment_summary <- ggplot2::ggplot(plot_frame, aes(x = factor(Emotions, levels = Emotions), y = Sentiment_Score , fill=Sentiment_Score)) +
+    ggplot2::geom_bar(stat = "identity", color="black")+ggplot2::theme_minimal() +
+    ggplot2::labs(title="Cumulate Sentiment Score",x="Emotion", y = "Cumulative Score")+ ggplot2::theme(legend.position="none")+
+    ggplot2::theme(axis.text.x = element_text(angle = 45, hjust=1)) +ggplot2::scale_fill_distiller(palette = "Greens")
 
   input_data <- head(x$Word_Frequency, n=10)
-  word_frequency <- ggplot(input_data, aes(x = n, y = factor(word1, levels = rev(word1)),fill=n)) +
-    geom_bar(stat = "identity", color="black")+
-    theme_minimal()+
-    scale_fill_distiller(palette = "Greens")+
-    labs(title="Word Frequency (top 10)",x="Count", y = "Word")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+  word_frequency <- ggplot2::ggplot(input_data, aes(x = n, y = factor(word1, levels = rev(word1)),fill=n)) +
+    ggplot2::geom_bar(stat = "identity", color="black")+
+    ggplot2::theme_minimal()+
+    ggplot2::scale_fill_distiller(palette = "Greens")+
+    ggplot2::labs(title="Word Frequency (top 10)",x="Count", y = "Word")+ ggplot2::theme(legend.position="none")+
+    ggplot2::theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
   input_data <- head(x$Bigrams, n=10) %>%
-    mutate(Bigram = paste(word1, word2)) %>%
-    select(Bigram, n)
-  Bigram_frequency <- ggplot(input_data, aes(x = n, y = factor(Bigram, levels = rev(Bigram)),fill=n)) +
-    geom_bar(stat = "identity", color="black")+
-    theme_minimal()+
-    scale_fill_distiller(palette = "Greens")+
-    labs(title="Bigram Frequency (top 10)",x="Count", y = "Bigram")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+    dplyr::mutate(Bigram = paste(word1, word2)) %>%
+    dplyr::select(Bigram, n)
+  Bigram_frequency <- ggplot2::ggplot(input_data, aes(x = n, y = factor(Bigram, levels = rev(Bigram)),fill=n)) +
+    ggplot2::geom_bar(stat = "identity", color="black")+
+    ggplot2::theme_minimal()+
+    ggplot2::scale_fill_distiller(palette = "Greens")+
+    ggplot2::labs(title="Bigram Frequency (top 10)",x="Count", y = "Bigram")+ ggplot2::theme(legend.position="none")+
+    ggplot2::theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
   input_data <- head(x$Trigrams, n=10) %>%
-    mutate(Trigram = paste(word1, word2, word3)) %>%
-    select(Trigram, n)
-  Trigram_frequency <- ggplot(input_data, aes(x = n, y = factor(Trigram, levels = rev(Trigram)),fill=n)) +
-    geom_bar(stat = "identity", color="black")+
-    theme_minimal()+
-    scale_fill_distiller(palette = "Greens")+
-    labs(title="Trigram Frequency (top 10)",x="Count", y = "Trigram")+ theme(legend.position="none")+
-    theme(axis.text.y = element_text(angle = 45, vjust=-1))
+    dplyr::mutate(Trigram = paste(word1, word2, word3)) %>%
+    dplyr::select(Trigram, n)
+  Trigram_frequency <- ggplot2::ggplot(input_data, aes(x = n, y = factor(Trigram, levels = rev(Trigram)),fill=n)) +
+    ggplot2::geom_bar(stat = "identity", color="black")+
+    ggplot2::theme_minimal()+
+    ggplot2::scale_fill_distiller(palette = "Greens")+
+    ggplot2::labs(title="Trigram Frequency (top 10)",x="Count", y = "Trigram")+ ggplot2::theme(legend.position="none")+
+    ggplot2::theme(axis.text.y = element_text(angle = 45, vjust=-1))
 
 
   suppressWarnings(if(is.na(x$Corr_matrix)){
-    corrolation_plot <- ggplot() + theme_void()
+    corrolation_plot <- ggplot2::ggplot() + ggplot2::theme_void()
   }
   else{
     corrolation_plot <- x$Corr_matrix %>%
-      filter(correlation > cor_cut) %>%
-      graph_from_data_frame() %>%
-      ggraph(layout = "fr") +
-      geom_edge_link(show.legend = FALSE) +
-      geom_node_point(color = "lightgreen", size = 5) +
-      geom_node_text(aes(label = name), repel = TRUE) +
-      theme_void()+
-      labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ theme(legend.position="none")
+      dplyr::filter(correlation > cor_cut) %>%
+      igraph::graph_from_data_frame() %>%
+      ggraph::ggraph(layout = "fr") +
+      ggraph::geom_edge_link(show.legend = FALSE) +
+      ggraph::geom_node_point(color = "lightgreen", size = 5) +
+      ggraph::geom_node_text(aes(label = name), repel = TRUE) +
+      ggplot2::theme_void()+
+      ggplot2::labs(title=paste("Corrolation clusters >",cor_cut, sep =""))+ ggplot2::theme(legend.position="none")
   })
 
 
-  graphics <- ggarrange(ggarrange(sentiment_summary, word_frequency, ncol = 2),
-                        ggarrange(Bigram_frequency, Trigram_frequency, ncol =2),
-                        ggarrange(corrolation_plot, ncol = 1),
+  graphics <- ggpubr::ggarrange(ggpubr::ggarrange(sentiment_summary, word_frequency, ncol = 2),
+                        ggpubr::ggarrange(Bigram_frequency, Trigram_frequency, ncol =2),
+                        ggpubr::ggarrange(corrolation_plot, ncol = 1),
                         heights = c(1,1,2),
                         nrow = 3)
 
 
-  annotate_figure(graphics, top = text_grob(as.character(x$input_name),
+  ggpubr::annotate_figure(graphics, top = text_grob(as.character(x$input_name),
                                             color = "black", face = "bold", size = 15))
 
 }

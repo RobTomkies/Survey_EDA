@@ -82,7 +82,7 @@ NLP_Uni_EDA <- function(dataset,
   if(length(NLP_names) > 0){
     NLP_data <- updated_data$data %>% dplyr::select(all_of(NLP_names))
     NLP_data <- NLP_data %>%
-      mutate(across(everything(), as.character))
+      dplyr::mutate(across(everything(), as.character))
   }else(stop('No NLP Data present to analyse'))
 
   output_data <- list()
@@ -144,5 +144,5 @@ print.aggregate_NLP <- function(x){
   names(output_table) <- c('Columns Analysed', 'Data available')
   output_table[is.na(output_table)] = ""
 
-  pander(output_table)
+  pander::pander(output_table)
 }

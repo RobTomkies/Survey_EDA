@@ -102,7 +102,6 @@ Alternate_NA_Remove <- function(input_list, dataset){
     adjusted_input_list <- column_recog_list('alternate_NA', input_list, dataset)
     column_indexes <- adjusted_input_list[[1]]
     NA_values <- adjusted_input_list[[2]]
-    #!TODO shift to rcpp?
     for(i in 1:length(column_indexes)){
       #check alternate values are found
       if(any(!(NA_values[[i]] %in% dataset[,column_indexes[i]]))){

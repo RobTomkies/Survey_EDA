@@ -148,19 +148,19 @@ Data_Describe <- function(dataset,
 #'
 #' @export
 print.data_describe <- function(x){
-  panderOptions('knitr.auto.asis', FALSE)
+  pander::panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
-  pander(x$dimensions, caption = "Data Dimensions")
+  pander::pander(x$dimensions, caption = "Data Dimensions")
 
   general_stats <- data.frame(rbind(c(x$repeat_rows, x$memory_size)))
   names(general_stats) <- c('Identical Rows Count', 'Memory Size (B)')
-  pander(general_stats, caption = "General Data Statistics")
+  pander::pander(general_stats, caption = "General Data Statistics")
 
-  pander(x$data_type_conversion, caption = "Original and detected data type converted to")
+  pander::pander(x$data_type_conversion, caption = "Original and detected data type converted to")
 
   output_dt_mis <- x$grouped_missingness
   output_dt_mis[is.na(output_dt_mis)] <- ""
-  pander(output_dt_mis, caption = "Data fields by Missingness (%)", split.cells = 12)
+  pander::pander(output_dt_mis, caption = "Data fields by Missingness (%)", split.cells = 12)
 }
 
 #' Plot method for data_describe s3 class
@@ -176,19 +176,19 @@ plot.data_describe <- function(x){
   lbls1 <- paste(names(data_type_table), "\n", data_type_table, sep="")
 
   df_data_type <- x$data_type_conversion %>%
-    group_by(`converted type`) %>% # Variable to be transformed
-    count() %>%
-    ungroup() %>%
-    mutate(perc = `n` / sum(`n`)) %>%
-    arrange(perc) %>%
-    mutate(labels = scales::percent(perc))
+    dplyr::group_by(`converted type`) %>% # Variable to be transformed
+    dplyr::count() %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(perc = `n` / sum(`n`)) %>%
+    dplyr::arrange(perc) %>%
+    dplyr::mutate(labels = scales::percent(perc))
 
   p_dtype <- ggplot2::ggplot(df_data_type, aes(x = "", y = perc, fill = `converted type`)) +
-    geom_col() + theme_void()+
-    geom_text(aes(label = labels),
+    ggplot2::geom_col() + ggplot2::theme_void()+
+    ggplot2::geom_text(aes(label = labels),
               position = position_stack(vjust = 0.5))+
-    coord_polar(theta = "y") +ggtitle("Data Types Present")+
-    theme(plot.title = element_text(hjust = 0.5))
+    ggplot2::coord_polar(theta = "y") +ggtitle("Data Types Present")+
+    ggplot2::theme(plot.title = element_text(hjust = 0.5))
 
 
   counts <- c(sum(!is.na(x$grouped_missingness['Complete'])),
@@ -200,34 +200,34 @@ plot.data_describe <- function(x){
   category <- c('Complete', '>0 to 10%', '>10 to 25%', '>25 to 50%', '>50 to 75%', '>75%' )[]
 
   df_missing <- data.frame(counts, category) %>%
-    filter(counts > 0) %>%
-    mutate(perc = `counts` / sum(`counts`)) %>%
-    arrange(perc) %>%
-    mutate(labels = scales::percent(perc))
+    dplyr::filter(counts > 0) %>%
+    dplyr::mutate(perc = `counts` / sum(`counts`)) %>%
+    dplyr::arrange(perc) %>%
+    dplyr::mutate(labels = scales::percent(perc))
 
   p_missing <- ggplot2::ggplot(df_missing, aes(x = "", y = perc, fill = category)) +
-    geom_col() +
-    geom_text(aes(label = labels),
+    ggplot2::geom_col() +
+    ggplot2::geom_text(aes(label = labels),
               position = position_stack(vjust = 0.5))+
-    theme_void()+
-    coord_polar(theta = "y") +ggtitle("Missingness of data")+
-    theme(plot.title = element_text(hjust = 0.5))
+    ggplot2::theme_void()+
+    ggplot2::coord_polar(theta = "y") +ggtitle("Missingness of data")+
+    ggplot2::theme(plot.title = element_text(hjust = 0.5))
 
   missing_graphic <- x$data %>%
-    mutate(id = row_number()) %>%
-    gather(-id, key = "key", value = "val") %>%
-    mutate(isna = is.na(val)) %>%
-    ggplot(aes(key, id, fill = isna)) +
+    dplyr::mutate(id = row_number()) %>%
+    tidyr::gather(-id, key = "key", value = "val") %>%
+    dplyr::mutate(isna = is.na(val)) %>%
+    ggplot2::ggplot(aes(key, id, fill = isna)) +
     geom_raster(alpha=0.8) +
-    theme(axis.text.y = element_text(angle = 45)) +
-    scale_fill_manual(name = "",
+    ggplot2::theme(axis.text.y = element_text(angle = 45)) +
+    ggplot2::scale_fill_manual(name = "",
                       values = c('steelblue', 'tomato3'),
                       labels = c("Present", "Missing")) +
-    labs(x = "Variable",
+    ggplot2::labs(x = "Variable",
          y = "Row Number", title = "Missing values in rows") +
-    coord_flip()
+    ggplot2::coord_flip()
 
-  ggarrange(ggarrange(p_missing, p_dtype, ncol = 2), missing_graphic, nrow = 2)
+  ggpubr::ggarrange(ggpubr::ggarrange(p_missing, p_dtype, ncol = 2), missing_graphic, nrow = 2)
 
 }
 

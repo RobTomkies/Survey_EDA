@@ -3,3 +3,6 @@
 - (stretch) wrapper function for all.
 - plot(Data_Describe(basic_test_data)) - warning attributes not identical across measure variables they will be dropped - check 
 - Data_Describe - check whether remove repeat is working
+- !key - update data_type_detect to properly catch wrong input type errors - numeric.force being the key one Ive noticed
+- !key document data https://r-pkgs.org/data.html
+- function dependency ::
