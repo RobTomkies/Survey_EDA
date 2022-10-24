@@ -70,15 +70,19 @@ Categorical_Uni_EDA <- function(dataset,
   Nom_names_all <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Nominal']
 
   if(length(ignore.columns) >0 ){
-    Ord_names <- Ord_names_all[!(column_recog_vector('ignore.columns',Ord_names_all, dataset) %in% drop_vector)]
-    Nom_names <- Nom_names_all[!(column_recog_vector('ignore.columns',Nom_names_all, dataset) %in% drop_vector)]
+    if(length(Ord_names_all) > 0){Ord_names <- Ord_names_all[!(column_recog_vector('ignore.columns',Ord_names_all, dataset) %in% drop_vector)]}
+    else{Ord_names <- Ord_names_all}
+    if(length(Nom_names_all) > 0){Nom_names <- Nom_names_all[!(column_recog_vector('ignore.columns',Nom_names_all, dataset) %in% drop_vector)]}
+    else{Nom_names <- Nom_names_all}
   }
   else{
     Ord_names <- Ord_names_all
     Nom_names <- Nom_names_all
   }
+  if(length(Ord_names) == 0 & length(Nom_names) == 0){stop('No cetgorical data either detected or forced, please reconsider inputs')}
+
   if(length(Ord_names) > 0){
-    Ord_data <- updated_data$data %>% dplyr::select(Ord_names)
+    Ord_data <- updated_data$data %>% dplyr::select(all_of(Ord_names))
     #probably can be shifted to rcpp
     ordinal_stats <- lapply(Ord_data, function(x){
       counts <- sort(table(x),decreasing=TRUE)
@@ -97,7 +101,7 @@ Categorical_Uni_EDA <- function(dataset,
   }
 
   if(length(Nom_names) > 0){
-    Nom_data <- updated_data$data %>% dplyr::select(Nom_names)
+    Nom_data <- updated_data$data %>% dplyr::select(all_of(Nom_names))
 
     nominal_stats <- lapply(Nom_data, function(x){
       counts <- sort(table(x),decreasing=TRUE)
@@ -174,7 +178,6 @@ print.Categorical_EDA <- function(x){
 #' plot(x)
 #'
 #' @export
-x <- y
 plot.Categorical_EDA <- function(x){
   x <- unclass(x)
 

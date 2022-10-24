@@ -44,6 +44,9 @@ NLP_Uni_EDA <- function(dataset,
                         analyse_split_answers = T,
                         alternate.nas = list()){
 
+  if(!is.logical(analyse_split_answers)){stop('Input "analyse_split_answers" requires a logical True or False answer, please correct')}
+
+
   #dataset dimensions
   original_nrow <- nrow(dataset)
   original_ncol <- ncol(dataset)
@@ -77,7 +80,7 @@ NLP_Uni_EDA <- function(dataset,
 
 
   if(length(NLP_names) > 0){
-    NLP_data <- updated_data$data %>% dplyr::select(NLP_names)
+    NLP_data <- updated_data$data %>% dplyr::select(all_of(NLP_names))
     NLP_data <- NLP_data %>%
       mutate(across(everything(), as.character))
   }else(stop('No NLP Data present to analyse'))

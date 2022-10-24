@@ -28,7 +28,7 @@
 #'
 NLP_Column_Analysis <- function(column_in, input_name){
   if(typeof(input_name)!= 'character'){stop('column name must be a string')}
-  if(!is.vector(column_in)){stop('Input data must be a vector of strings, one row for each response')}
+  if(!(is.vector(column_in) & !is.list(column_in))){stop('Input data must be a vector of strings, one row for each response')}
   ## Tidy Format##
   #convert to tidy format
   working_data <- convert_tidy(column_in)

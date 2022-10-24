@@ -69,11 +69,11 @@ Numeric_Uni_EDA <- function(dataset,
   #select the names where data type is equal to integer etc
   int_names_all <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Integer']
   int_names <- int_names_all[!(column_recog_vector('ignore.columns',int_names_all, dataset) %in% drop_vector)]
-  integer_data <- updated_data$data %>% dplyr::select(int_names)
+  integer_data <- updated_data$data %>% dplyr::select(all_of(int_names))
 
   double_names_all <- updated_data$converted_type$data_field[updated_data$converted_type$data_type == 'Float']
   double_names <- double_names_all[!(column_recog_vector('ignore.columns',double_names_all, dataset) %in% drop_vector)]
-  double_data <- updated_data$data %>% dplyr::select(double_names)
+  double_data <- updated_data$data %>% dplyr::select(all_of(double_names))
   rm(updated_data)
 
   if(ncol(integer_data) == 0 | ncol(double_data) == 0 ){stop('No numeric data either detected or forced, please correct')}

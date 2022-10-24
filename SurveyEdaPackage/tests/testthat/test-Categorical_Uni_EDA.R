@@ -1,6 +1,7 @@
 
 test_that("Input Warnings are correct unique to function",{
   expect_error(Categorical_Uni_EDA(basic_test_data, detect = 4),'Inputs for "detect" must be logical True or False, please correct')
+  expect_error(Categorical_Uni_EDA(basic_test_data, ignore.columns = c(names(basic_test_data))), 'No cetgorical data either detected or forced, please reconsider inputs')
 })
 
 test_that("Output data structures are correct types",{
