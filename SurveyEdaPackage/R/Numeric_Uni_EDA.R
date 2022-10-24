@@ -80,7 +80,7 @@ Numeric_Uni_EDA <- function(dataset,
   #integer values
   #if hunting for rcpp these can all be converted
   int_means <- RCPPColMean(as.matrix(integer_data))
-  int_medians <-RCPPColMedian(as.matrix(integer_data))
+  int_medians <- RCPPColMedian(as.matrix(integer_data))
   int_modes <- lapply(integer_data, function(x)return(as.numeric(names(table(x))[table(x) == max(table(x))])))
   int_modes <- sapply(int_modes, function(x){if(length(x)>10){return('More than 10 values')}else{return(x)}})
   int_max <-RCPPColMax(as.matrix(integer_data))
@@ -139,7 +139,7 @@ Numeric_Uni_EDA <- function(dataset,
 #'
 #' @export
 print.Numeric_EDA <- function(x){
-  panderOptions('knitr.auto.asis', FALSE)
+  pander::panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   integer_names <- names(x$Interger_Data)
   float_names <- names(x$Double_Data)
@@ -148,7 +148,7 @@ print.Numeric_EDA <- function(x){
   output_table <- cbind(float_names, integer_names)
 
   output_table[is.na(output_table)] <- ""
-  pander(output_table, caption = 'Field name and numeric type included in analysis')
+  pander::pander(output_table, caption = 'Field name and numeric type included in analysis')
 
   max_repeat_length <- max(sapply(x$GT_20pcnt_Flag, length))
   high_repeat <- x$GT_20pcnt_Flag
@@ -169,7 +169,7 @@ print.Numeric_EDA <- function(x){
       return(x)
     }
     } ))
-  pander(output_2, caption = "Values that make up 20% or more of data in each field")
+  pander::pander(output_2, caption = "Values that make up 20% or more of data in each field")
 }
 
 #' Summary function for Numeric_Uni_EDA S3 Object
@@ -187,7 +187,7 @@ print.Numeric_EDA <- function(x){
 #'
 #' @export
 summary.Numeric_EDA <- function(x){
-  panderOptions('knitr.auto.asis', FALSE)
+  pander::panderOptions('knitr.auto.asis', FALSE)
   x <- unclass(x)
   integer_names <- names(x$Interger_Data)
   num_o_ints <- length(integer_names)
@@ -213,9 +213,9 @@ summary.Numeric_EDA <- function(x){
       output_float_df[i,j] = sapply(x$Float_Characteristics[[j]][i], paste, collapse = ", ")
   }
 
-  pander(output_int_df, caption = 'Integer numeric data characteristics')
+  pander::pander(output_int_df, caption = 'Integer numeric data characteristics')
 
-  pander(output_float_df, caption = 'Float numeric data characteristics')
+  pander::pander(output_float_df, caption = 'Float numeric data characteristics')
 }
 
 #' Plot function for Numeric_Uni_EDA S3 Object
@@ -240,26 +240,26 @@ plot.Numeric_EDA <- function(x){
   num_o_floats <- length(float_names)
 
   #float_data
-  violins <- ggplot(x$Double_Data %>% pivot_longer( everything()), aes(x=name, y=value)) +
-    geom_violin(trim=TRUE, fill='#A4A4A4', color="darkred")+
-    geom_boxplot(width=0.1) + theme_minimal()+
-    labs(title="Float Type",x="Variable", y = "Value (Each Independent)")+
-    facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right") + coord_flip()
+  violins <- ggplot2::ggplot(x$Double_Data %>% tidyr::pivot_longer( everything()), aes(x=name, y=value)) +
+    ggplot2::geom_violin(trim=TRUE, fill='#A4A4A4', color="darkred")+
+    ggplot2::geom_boxplot(width=0.1) + ggplot2::theme_minimal()+
+    ggplot2::labs(title="Float Type",x="Variable", y = "Value (Each Independent)")+
+    ggplot2::facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right") + coord_flip()
 
-  hists <- ggplot(x$Interger_Data%>% pivot_longer( everything()), aes(x = value)) +theme_minimal()+
-    geom_histogram(fill = "#A4A4A4", colour = "darkred", bins = 15) +  geom_boxplot(width=0.1, position= position_nudge(y=-.5)) +
-    labs(title="Integer Type",x="Value (Each Independent)", y = "Variable") +
-    facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
+  hists <- ggplot2::ggplot(x$Interger_Data%>% tidyr::pivot_longer( everything()), aes(x = value)) +ggplot2::theme_minimal()+
+    ggplot2::geom_histogram(fill = "#A4A4A4", colour = "darkred", bins = 15) +  ggplot2::geom_boxplot(width=0.1, position= position_nudge(y=-.5)) +
+    ggplot2::labs(title="Integer Type",x="Value (Each Independent)", y = "Variable") +
+    ggplot2::facet_wrap(name ~ ., scales = "free", ncol= 1,strip.position="right")
 
-  blank_hold <- ggplot() + theme_void()
+  blank_hold <- ggplot2::ggplot() + ggplot2::theme_void()
   if(num_o_floats > num_o_ints){
-    ggarrange(violins,
-              ggarrange(hists, blank_hold, ncol =1, heights = c(num_o_ints * 2, (num_o_floats-num_o_ints)*2)),
+    ggpubr::ggarrange(violins,
+              ggpubr::ggarrange(hists, blank_hold, ncol =1, heights = c(num_o_ints * 2, (num_o_floats-num_o_ints)*2)),
               ncol = 2, heights =c(num_o_floats *2))
   }
   else{
-    ggarrange(hists,
-              ggarrange(violins, blank_hold, ncol =1, heights = c(num_o_floats * 2, (num_o_ints-num_o_floats)*2)),
+    ggpubr::ggarrange(hists,
+              ggpubr::ggarrange(violins, blank_hold, ncol =1, heights = c(num_o_floats * 2, (num_o_ints-num_o_floats)*2)),
               ncol = 2, heights =c(num_o_floats *2))
   }
 
